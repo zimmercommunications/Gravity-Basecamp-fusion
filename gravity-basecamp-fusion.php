@@ -8,4 +8,9 @@ Author URI:   https://github.com/reckypoo
 License:      GPL2
 License URI:  https://www.gnu.org/licenses/gpl-2.0.html
 */
+namespace GBF;
+
+include './gbf-controller.php';
+
+GBF_Controller::req_gf();
 

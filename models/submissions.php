@@ -2,7 +2,7 @@
 //the submissions model will be used to interact with the WordPress CMS to get and write data.
 
 class Submissions{
-    private function __construct(){
+    public function __construct(){
 
     }
     //Function 
@@ -18,22 +18,26 @@ class Submissions{
         //Returns array of Form objects. 
         $forms_arr = GFAPI::get_forms($active, $trash, $sort_column, $sort_dir);
         $ids = [];
-        foreach($form_arr as $form){
-            array_push($ids, rgar($form, 'id'));
+        foreach($forms_arr as $form){
+            $ids[rgar($form, 'title')] = intval(rgar($form, 'id'));
         }
         return $ids;
-
     }
 
     public function get_fields($form_id){
         $form_obj = GFAPI::get_form($form_id);
-        $field_types = array('card', 'checkbox', 'checkbox_and_select', 'custom_field', 'dynamic_field_map', 'field_map', 'field_select', 'generic_map', 'hidden', 'post_select', 'radio_button', 'save_button', 'select', 'select_custom', 'simple_condition', 'text', 'textarea');
-        $fields = GFAPI::get_fields_by_type($form_obj, $field_types);
-        $fields_arr = [];
-        foreach($fields as $field){
-            array_push($fields_arr, $field->label);
+        if($form_obj){
+                $field_types = array('card', 'checkbox', 'checkbox_and_select', 'custom_field', 'dynamic_field_map', 'field_map', 'field_select', 'generic_map', 'hidden', 'post_select', 'radio_button', 'save_button', 'select', 'select_custom', 'simple_condition', 'text', 'textarea');
+            $fields = GFAPI::get_fields_by_type($form_obj, $field_types);
+            $fields_arr = [];
+            foreach($fields as $field){
+                $fields_arr[$field->label] = $field->id;
+            }
+            return $fields_arr;
+        }else{
+            echo '<div class="notice notice-error"><p>get_fields failed due to a failure to retrieve the form object.</p></div>';
         }
-        return $fields_arr;
+        
     }
-
+   
 }

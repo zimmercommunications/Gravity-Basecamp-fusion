@@ -15,8 +15,5 @@ define( 'MY_ACF_URL', plugin_dir_url(__FILE__) . 'plugins/acf/' );
 require_once PROJECT_ROOT_PATH . '/inc/bootstrap.php';
 
 
-// Customize the url setting to fix incorrect asset URLs.
-add_filter('acf/settings/url', 'my_acf_settings_url');
-function my_acf_settings_url( $url ) {
-    return MY_ACF_URL;
-}
+$GBF = new GBF_Controller;
+//$GBF::update_field_choices();

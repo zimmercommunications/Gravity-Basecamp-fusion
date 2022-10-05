@@ -3,26 +3,41 @@
 class GBF_Controller{
     
     function __construct(){
-        //Require GravityForms to be installed 
-        register_activation_hook( __FILE__ .'./gravity-basecamp-fusion.php', array($this, 'child_plugin_activate') );
-        
         //Roll out ACF Options Page & ACF Fields
         $acf_model = new GBF_ACF;
         $gf_model = new Submissions;
+
         $bc_model = new Basecamp;
 
+        //Check/get token from BaseCamp Auth Server
+        if(empty($_SESSION['basecamptoken'])){
+            $bc_model::get_token();
+        }
+        //Configure Endpoint for Auth Token retrieval. Set the Endpoint to fire the 
+        add_action('rest_api_init', function(){
+            register_rest_route('gbf/v1', 'auth', array('methods' => 'GET', 'callback' => array($this, 'redirected')));
+        });
+
+        //Require GravityForms to be installed 
+        register_activation_hook( __FILE__ .'./gravity-basecamp-fusion.php', array($this, 'child_plugin_activate') );
+        
         $acf_model::gen_options_page();
         $acf_model::gen_options_fields();
 
         //Provides functions to be used by front-end user
-        $targetForm = get_field('form_id','base-camp-link');
+        $targetForm = get_field('form_id','bcl-options');
         
         //Hook new submission to the get_submissions function
-        add_action( 'gform_after_submission_'.$targetForm, 'get_submissions', 10, 2 );
+        add_action( 'gform_after_submission_'.$targetForm, array($this, 'get_submissions'), 10, 2 );
         add_filter('acf/load_field/name=form_id', array($this, 'update_form_field_choices'));
         add_filter('acf/load_field/name=form_field_id', array($this, 'update_form_fields_id_choices'));        
     }
 
+    //Function to get auth'd for BC API. Fires to return auth token, and receive actual token. 
+    public function redirected(){
+        $bc_model = New Basecamp;
+        $bc_model::get_token();
+    }
 
     //Function to update options page field
     public function update_form_field_choices($field){ 
@@ -81,19 +96,21 @@ class GBF_Controller{
     }
 
     //Function to grab new submission's data and send data to Base Camp
-    public function get_submissions($form_ids, $search_criteria = array(), $sorting = null, $paging = null, &$total_count = null){
+    public function get_submissions($form_ids = '', $search_criteria = array(), $sorting = null, $paging = null, &$total_count = null){
         $bc_model = New Basecamp;
         $gf_model = new Submissions;
 
-        $bc_model::get_token();
-        
+        $form_id = get_field('form_id', 'bcl-options');
+        $entry_obj = $gf_model::get_entry($form_ids, $search_criteria, $sorting, $paging, $total_count);
 
-        //Retrieve Options Menu Values
+        print_r($entry_obj);        
+
+        //Retrieve Options Menu Values from ACF options page
         $endpoint_url = get_field('endpoint_url', 'bcl-options');
         $data = [];
         //$field_choices = get_field_object('field_630e72abaf029')['choices'];
 
-        //Data retrieval from ACF
+        //Data retrieval from ACF 
         if(have_rows('fields_to_send', 'bcl-options')):
             while(have_rows('fields_to_send', 'bcl-options')) : the_row();
                 $value = get_sub_field('form_field_id');

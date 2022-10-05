@@ -18,7 +18,7 @@ class Basecamp{
         $provider = new Stevenmaguire\OAuth2\Client\Provider\Basecamp([
             'clientId'          => '0380a7df112fc726de678383571bf0605975e85d',
             'clientSecret'      => '64b11d0a24af0470a3dafa7b75fc1362bb25ab3e',
-            'redirectUri'       => 'http://caylacorkill.local:10004/wp-admin/',
+            'redirectUri'       => 'https://dev.clear99.com/wp-json/gbf/v1/auth',
         ]);
 
         if (!isset($_GET['code'])) {
@@ -57,6 +57,7 @@ class Basecamp{
 
             // Use this to interact with an API on the users behalf
             echo $token->getToken();
+            $_SESSION['basecamptoken'] = $token;
         }
     }    
 }

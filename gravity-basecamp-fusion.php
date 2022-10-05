@@ -11,6 +11,7 @@ License URI:  https://www.gnu.org/licenses/gpl-2.0.html
 define("PROJECT_ROOT_PATH", __DIR__ );
 define( 'MY_ACF_PATH', plugin_dir_path(__FILE__) . 'plugins/acf' );
 define( 'MY_ACF_URL', plugin_dir_url(__FILE__) . 'plugins/acf/' );
+define('COMPOSER', __DIR__ . '/vendor');
 
 require_once PROJECT_ROOT_PATH . '/inc/bootstrap.php';
 

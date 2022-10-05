@@ -9,6 +9,7 @@ class GBF_Controller{
         //Roll out ACF Options Page & ACF Fields
         $acf_model = new GBF_ACF;
         $gf_model = new Submissions;
+        $bc_model = new Basecamp;
 
         $acf_model::gen_options_page();
         $acf_model::gen_options_fields();
@@ -19,11 +20,11 @@ class GBF_Controller{
         //Hook new submission to the get_submissions function
         add_action( 'gform_after_submission_'.$targetForm, 'get_submissions', 10, 2 );
         add_filter('acf/load_field/name=form_id', array($this, 'update_form_field_choices'));
-        add_filter('acf/load_field/name=form_field_id', array($this, 'update_form_fields_id_choices'));
+        add_filter('acf/load_field/name=form_field_id', array($this, 'update_form_fields_id_choices'));        
     }
 
 
-    
+    //Function to update options page field
     public function update_form_field_choices($field){ 
         // reset choices
         $field['choices'] = array();
@@ -36,12 +37,12 @@ class GBF_Controller{
                 $field['choices'][$choice] = $choice;
             }
         }else{
-            echo '<div class="notice notice-error"><p>update_form_fields_id_choices failed due to a get_forms not returning an array</p></div>';
+            echo '<div class="notice notice-error"><p>Failed to populate Form ID to Watch due to a get_forms not returning an array</p></div>';
         }    
         // return the field
         return $field;
     }
-
+    //Function to update options page field
     public function update_form_fields_id_choices( $field ) {
         $gf_model = new Submissions;
         
@@ -60,20 +61,17 @@ class GBF_Controller{
                     $field['choices'][ $choice ] = $key;                
                 }            
             }else{
-                echo '<div class="notice notice-error"><p>update_form_fields_id_choices failed due to a failure to retrieve the fields.</p></div>';
+                echo '<div class="notice notice-error"><p>Failed to populate Form Field ID choices due to a failure to retrieve the fields.</p></div>';
             }            
             // return the field
             return $field;
         }else{
-            echo '<div class="notice notice-error"><p>update_form_fields_id_choices failed due to a failure to retrieve the target form id.</p></div>';
+            echo '<div class="notice notice-error"><p>Failed to populate Form Field ID choices due to a failure to retrieve the target form id.</p></div>';
             return $field;
         }
     }
-    
 
-
-
-
+    //Function to make sure GravityForms is installed
     public function child_plugin_activate(){
         // Require parent plugin
         if ( ! is_plugin_active( 'plugins/gravityforms/gravityforms.php' ) && current_user_can( 'activate_plugins' ) ) {
@@ -82,22 +80,32 @@ class GBF_Controller{
         }
     }
 
+    //Function to grab new submission's data and send data to Base Camp
     public function get_submissions($form_ids, $search_criteria = array(), $sorting = null, $paging = null, &$total_count = null){
+        $bc_model = New Basecamp;
+        $gf_model = new Submissions;
+
+        $bc_model::get_token();
+        
+
         //Retrieve Options Menu Values
-        
-        
-        // Ask the GF api for it's data and store it in a variable to hand off to the basecamp model
-        $gravityModel = new Submissions;
-        $sorting = array(
-            'key' => 'date_created',
-            'direction' => 'DEC',
-            'is_numeric' => false
-        );
-        $submission = $gravityModel->get_entry($targetForm, array(), $sorting, null, 1);
+        $endpoint_url = get_field('endpoint_url', 'bcl-options');
+        $data = [];
+        //$field_choices = get_field_object('field_630e72abaf029')['choices'];
+
+        //Data retrieval from ACF
+        if(have_rows('fields_to_send', 'bcl-options')):
+            while(have_rows('fields_to_send', 'bcl-options')) : the_row();
+                $value = get_sub_field('form_field_id');
+                $key = get_sub_field('map_to');
+            endwhile;
+        endif;
+            
+  
         //Prepare Data for BaseCamp        
 
         //Send data to BaseCamp
-        $basecampModel = New Basecamp;
+
     }
 }
 

@@ -18,10 +18,14 @@ class Submissions{
         //Returns array of Form objects. 
         $forms_arr = GFAPI::get_forms($active, $trash, $sort_column, $sort_dir);
         $ids = [];
-        foreach($forms_arr as $form){
-            $ids[rgar($form, 'title')] = intval(rgar($form, 'id'));
+        if($forms_arr){
+            foreach($forms_arr as $form){
+                $ids[rgar($form, 'title')] = intval(rgar($form, 'id'));
+            }
+            return $ids;
+        }else{
+            echo '<div class="notice notice-error"><p>get_fields failed due to a failure to retrieve form ids array.</p></div>';
         }
-        return $ids;
     }
 
     public function get_fields($form_id){
@@ -30,10 +34,14 @@ class Submissions{
                 $field_types = array('card', 'checkbox', 'checkbox_and_select', 'custom_field', 'dynamic_field_map', 'field_map', 'field_select', 'generic_map', 'hidden', 'post_select', 'radio_button', 'save_button', 'select', 'select_custom', 'simple_condition', 'text', 'textarea');
             $fields = GFAPI::get_fields_by_type($form_obj, $field_types);
             $fields_arr = [];
-            foreach($fields as $field){
-                $fields_arr[$field->label] = $field->id;
+            if($fields){
+                foreach($fields as $field){
+                    $fields_arr[$field->label] = $field->id;
+                }
+                return $fields_arr;
+            }else{
+                echo '<div class="notice notice-error"><p>Form does not have fields. Add fields or pick a form that has fields.</p></div>';
             }
-            return $fields_arr;
         }else{
             echo '<div class="notice notice-error"><p>get_fields failed due to a failure to retrieve the form object.</p></div>';
         }

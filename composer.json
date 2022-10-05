@@ -1,0 +1,6 @@
+{
+    
+    "require": {
+        "stevenmaguire/oauth2-basecamp": "^0.2.0"
+    }
+}

@@ -1,6 +1,10 @@
 {
     
     "require": {
-        "stevenmaguire/oauth2-basecamp": "^0.2.0"
+        "stevenmaguire/oauth2-basecamp": "^0.2.0",
+        "phpunit/phpunit": "^9.5"
+    },
+    "scripts":{
+        "test": "phpunit"
     }
 }

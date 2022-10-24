@@ -111,6 +111,7 @@ abstract class AbstractProvider
      */
     public function __construct(array $options = [], array $collaborators = [])
     {
+
         // We'll let the GuardedPropertyTrait handle mass assignment of incoming
         // options, skipping any blacklisted properties defined in the provider
         $this->fillProperties($options);
@@ -150,7 +151,7 @@ abstract class AbstractProvider
      */
     protected function getAllowedClientOptions(array $options)
     {
-        $client_options = ['timeout', 'proxy'];
+        $client_options = ['timeout', 'proxy', 'verify'];
 
         // Only allow turning off ssl verification if it's for a proxy
         if (!empty($options['proxy'])) {

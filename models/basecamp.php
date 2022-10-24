@@ -1,6 +1,8 @@
 <?php
-//The basecamp model is to be used to interact with the Basecamp API
+namespace ZimmerCommunications\models;
 
+//The basecamp model is to be used to interact with the Basecamp API
+use Stevenmaguire\OAuth2\Client\Provider\Basecamp as Provider;
 class Basecamp{
     public function __construct(){
 
@@ -14,50 +16,46 @@ class Basecamp{
     public function handle_oauth_response($res){
         return $res;
     }
-    public function get_token(){
-        $provider = new Stevenmaguire\OAuth2\Client\Provider\Basecamp([
-            'clientId'          => '0380a7df112fc726de678383571bf0605975e85d',
-            'clientSecret'      => '64b11d0a24af0470a3dafa7b75fc1362bb25ab3e',
-            'redirectUri'       => 'https://dev.clear99.com/wp-json/gbf/v1/auth',
+    public function get_token($redirect, $cid, $cs){
+        $token = '';
+        $provider = new Provider([
+            'clientId'          => $cid,
+            'clientSecret'      => $cs,
+            'redirectUri'       => $redirect,
         ]);
 
         if (!isset($_GET['code'])) {
 
-            // If we don't have an authorization code then get one
+            //If we don't have an authorization code then get one
             $authUrl = $provider->getAuthorizationUrl();
+            if(!$authUrl){
+                exit('getAuthorizationUrl() returned an empty string on line 28 of basecamp.php '. print_r($provider));
+            }
+            //To-Do: $provider->getState() is not returning a value.
             $_SESSION['oauth2state'] = $provider->getState();
+
+            //redirect to auth token server url
             header('Location: '.$authUrl);
             exit;
 
         // Check given state against previously stored one to mitigate CSRF attack
         } elseif (empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
             unset($_SESSION['oauth2state']);
-            exit('Invalid state');
+            exit('Invalid state. State was: '.$_GET['state'].'. oauth2state was: '.$_SESSION['oauth2state'].'.');
 
         } else {
             // Try to get an access token (using the authorization code grant)
-            $token = $provider->getAccessToken('authorization_code', [
-                'code' => $_GET['code']
-            ]);
-
-            // Optional: Now you have a token you can look up a users profile data
-            try {
-
-                // We got an access token, let's now get the user's details
-                $user = $provider->getResourceOwner($token);
-
-                // Use these details to create a new profile
-                printf('Hello %s!', $user->getId());
-
-            } catch (Exception $e) {
-
-                // Failed to get user details
-                exit('Oh dear...');
+            try{
+                $token = $provider->getAccessToken('authorization_code', [
+                    'code' => $_GET['code']
+                ]);  
+                // Use this to interact with an API on the users behalf
+                return $token->getToken();
+            }catch(Exception $e){
+                echo 'Caught exception: ', $e->getMessage(), '\n';
             }
-
-            // Use this to interact with an API on the users behalf
-            echo $token->getToken();
-            $_SESSION['basecamptoken'] = $token;
+              
         }
+
     }    
 }

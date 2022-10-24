@@ -33,10 +33,9 @@ class GBF_Controller{
         add_action( 'gform_after_submission_'.$targetForm, array($this, 'get_submissions'), 10, 2 );
         add_filter('acf/load_field/name=form_id', array($this, 'update_form_field_choices'));
         add_filter('acf/load_field/name=form_field_id', array($this, 'update_form_fields_id_choices'));
-
     }
 
-    //Scripts added
+    //Scripts added 
     public function gbf_scripts(){
         //AJAX Oauth2 call for Basecamp API access.
         //wp_enqueue_script('token-ajax', plugin_dir_url(__DIR__) .'assets/js/ajax.js', false);

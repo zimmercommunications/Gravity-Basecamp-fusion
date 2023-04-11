@@ -47,7 +47,7 @@ class Basecamp{
                 $user = $provider->getResourceOwner($token);
 
                 // Use these details to create a new profile
-                printf('Hello %s!', $user->getId());
+                //printf('Hello %s!', $user->getId());
 
             } catch (Exception $e) {
 
@@ -56,7 +56,7 @@ class Basecamp{
             }
 
             // Use this to interact with an API on the users behalf
-            echo $token->getToken();
+            $token->getToken();
             $_SESSION['basecamptoken'] = $token;
         }
     }    

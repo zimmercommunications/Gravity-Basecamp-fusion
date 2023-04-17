@@ -6,17 +6,20 @@ class GBF_Controller{
         //Roll out ACF Options Page & ACF Fields
         $acf_model = new GBF_ACF;
         $gf_model = new Submissions;
-
+        $wp_model = new WordPress;
         $bc_model = new Basecamp;
 
         //Check/get token from BaseCamp Auth Server
-        if(empty($_SESSION['basecamptoken'])){
+        // if(empty($_SESSION['basecamptoken'])){
+        //     $bc_model::get_token();
+        // }
+        if(!isset($_COOKIE['basecamptoken'])){
             $bc_model::get_token();
         }
         //Configure Endpoint for Auth Token retrieval. Set the Endpoint to fire the 
-        add_action('rest_api_init', function(){
-            register_rest_route('gbf/v1', 'auth', array('methods' => 'GET', 'callback' => array($this, 'redirected')));
-        });
+        // add_action('rest_api_init', function(){
+        //     register_rest_route('gbf/v1', 'auth', array('methods' => 'GET', 'callback' => array($this, 'redirected')));
+        // });
 
         //Require GravityForms to be installed 
         register_activation_hook( __FILE__ .'./gravity-basecamp-fusion.php', array($this, 'child_plugin_activate') );
@@ -34,10 +37,10 @@ class GBF_Controller{
     }
 
     //Function to get auth'd for BC API. Fires to return auth token, and receive actual token. 
-    public function redirected(){
-        $bc_model = New Basecamp;
-        $bc_model::get_token();
-    }
+    // public function redirected(){
+    //     $bc_model = New Basecamp;
+    //     $bc_model::get_token();
+    // }
 
     //Function to update options page field
     public function update_form_field_choices($field){ 

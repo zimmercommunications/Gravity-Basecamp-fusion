@@ -9,6 +9,9 @@ License:      GPL2
 License URI:  https://www.gnu.org/licenses/gpl-2.0.html
 */
 session_start();
+
+setcookie('test', 'hi dad', time()+60*60*24*30);
+
 define("PROJECT_ROOT_PATH", __DIR__ );
 define( 'MY_ACF_PATH', plugin_dir_path(__FILE__) . 'plugins/acf' );
 define( 'MY_ACF_URL', plugin_dir_url(__FILE__) . 'plugins/acf/' );

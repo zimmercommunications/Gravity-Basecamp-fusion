@@ -1,33 +1,27 @@
 <?php
-//The basecamp model is to be used to interact with the Basecamp API
 
-class Basecamp{
+class WordPress{
     public function __construct(){
-
+        session_start();
+        $_SESSION['WordPressTest'] = 'true';
+        add_action('rest_api_init', function(){
+            register_rest_route('gbf/v1', array(
+                'methods' => 'GET',
+                'callback' => array($this, 'handle_oauth_res')
+            ));
+        });
     }
-    public function send_data($endpoint){
-
-    }
-    public function prep_data($data){
-
-    }
-    public function handle_oauth_response($res){
-        return $res;
-    }
-    public function get_token(WP_REST_Request $request){
-        /* replaced $_GET['state'] referrences with the variable $authState */
-        $authState = $request['state'];
-        /* replaced $_GET['code'] referrences with the variable $code */
-        $code = $request['code'];
-
+    function handle_oauth_res(){
+        $_SESSION['test'] = "hey mom";
+        exit('handle_oauth_res ran');
         $provider = new Stevenmaguire\OAuth2\Client\Provider\Basecamp([
             'clientId'          => '0380a7df112fc726de678383571bf0605975e85d',
             'clientSecret'      => '64b11d0a24af0470a3dafa7b75fc1362bb25ab3e',
             /* Redirect to this plugin's response handler */
-            'redirectUri'       => 'https://dev.clear99.com/wp-json/gbf/v1/auth',
+            'redirectUri'       => 'https://dev.clear99.com/wp-json/gbf/v1',
         ]);
 
-        if (!isset($code)) {
+        if (!isset($_GET['code'])) {
 
             // If we don't have an authorization code then get one
             $authUrl = $provider->getAuthorizationUrl();
@@ -37,15 +31,15 @@ class Basecamp{
             exit;
 
         // Check given state against previously stored one to mitigate CSRF attack
-        } elseif (empty($authState) || ($authState !== $_COOKIE['oauth2state'])) {
+        } elseif (empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
             setcookie('oauth2state', '', time()+60*60*24*30);
             unset($_SESSION['oauth2state']);
-            exit('Invalid state' . $_COOKIE['oauth2state']);
+            exit('Invalid state');
 
         } else {
             // Try to get an access token (using the authorization code grant)
             $token = $provider->getAccessToken('authorization_code', [
-                'code' => $code
+                'code' => $_GET['code']
             ]);
 
             // Optional: Now you have a token you can look up a users profile data

@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@badgateway/oauth2-client": "^2.0.18",
     "express": "^4.18.1",
     "simple-oauth2": "^4.3.0"
   }

@@ -327,11 +327,11 @@ class GFEntryList {
 		$table->prepare_items();
 		$table->output_scripts();
 		?>
-			<form id="entry_list_form" method="post" class="gform-settings-panel__content">
+			<form id="entry_list_form" method="post" class="gform-settings-panel__content gform-settings-panel__content--entry-list">
 				<?php
 				$table->views();
                 ?>
-                <div id="entry_search_container" >
+                <div id="entry_search_container">
                     <div id="entry_filters" ></div>
                     <a style="" class="button" id="entry_search_button"
                        href="javascript:Search('<?php echo esc_js( $table->get_orderby() ); ?>', '<?php echo esc_js( $table->get_order() ) ?>', <?php echo absint( $form_id ); ?>, jQuery('.gform-filter-value').val(), '<?php echo esc_js( $table->get_filter() ) ?>', jQuery('.gform-filter-field').val(), jQuery('.gform-filter-operator').val());"><?php esc_html_e( 'Search', 'gravityforms' ) ?></a>
@@ -741,7 +741,8 @@ final class GF_Entry_List_Table extends WP_List_Table {
 			$sort_field_meta = GFAPI::get_field( $form_id, $sort_field );
 
 			if ( $sort_field_meta instanceof GF_Field ) {
-				$is_numeric = $sort_field_meta->get_input_type() == 'number';
+				$numeric_fields = array( 'number', 'total', 'calculation', 'price', 'quantity', 'shipping', 'singleshipping', 'product', 'singleproduct' );
+				$is_numeric = in_array( $sort_field_meta->get_input_type(), $numeric_fields );
 			} else {
 				$entry_meta = GFFormsModel::get_entry_meta( $form_id );
 				$is_numeric = rgars( $entry_meta, $sort_field . '/is_numeric' );
@@ -882,7 +883,7 @@ final class GF_Entry_List_Table extends WP_List_Table {
 			'width'     => 620,
 		), admin_url() );
 
-		$table_columns['column_selector'] = '<a title="<div class=\'tb-title\'><div class=\'tb-title__logo\'></div><div class=\'tb-title__text\'><div class=\'tb-title__main\'>' . esc_attr__( 'Select Entry Table Columns', 'gravityforms' ) . '</div><div class=\'tb-title__sub\'>' . esc_attr( 'Drag & drop to order and select which columns are displayed in the entries table.', 'gravityforms' ) . '</div></div></div>" aria-label="' . esc_attr__( 'click to select columns to display', 'gravityforms' ) . '" href="' . esc_url( $column_selector_url ) . '" class="thickbox entries_edit_icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><rect x="0" fill="none" width="20" height="20"/><g><path fill="currentColor" d="M18 12h-2.18c-.17.7-.44 1.35-.81 1.93l1.54 1.54-2.1 2.1-1.54-1.54c-.58.36-1.23.63-1.91.79V19H8v-2.18c-.68-.16-1.33-.43-1.91-.79l-1.54 1.54-2.12-2.12 1.54-1.54c-.36-.58-.63-1.23-.79-1.91H1V9.03h2.17c.16-.7.44-1.35.8-1.94L2.43 5.55l2.1-2.1 1.54 1.54c.58-.37 1.24-.64 1.93-.81V2h3v2.18c.68.16 1.33.43 1.91.79l1.54-1.54 2.12 2.12-1.54 1.54c.36.59.64 1.24.8 1.94H18V12zm-8.5 1.5c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3z"/></g></svg></a>';
+		$table_columns['column_selector'] = '<a title="<div class=\'tb-title\'><div class=\'tb-title__logo\'></div><div class=\'tb-title__text\'><div class=\'tb-title__main\'>' . esc_attr__( 'Select Entry Table Columns', 'gravityforms' ) . '</div><div class=\'tb-title__sub\'>' . esc_attr( 'Drag & drop to order and select which columns are displayed in the entries table.', 'gravityforms' ) . '</div></div></div>" aria-label="' . esc_attr__( 'click to select columns to display', 'gravityforms' ) . '" href="' . esc_url( $column_selector_url ) . '" class="thickbox entries_edit_icon"><i class="gform-icon gform-icon--cog gform-icon--entries-edit"></i></a>';
 
 		/**
 		 * Allow the columns to be displayed in the entry list table to be overridden.
@@ -945,13 +946,13 @@ final class GF_Entry_List_Table extends WP_List_Table {
 	 * @param $primary
 	 */
 	function _column_is_starred( $entry, $classes, $data, $primary ) {
-		echo '<th scope="row" class="manage-column column-is_starred">';
+		echo '<td class="manage-column column-is_starred">';
 		if ( $this->filter !== 'trash' ) {
 			?>
-			<img id="star_image_<?php echo esc_attr( $entry['id'] ) ?>" src="<?php echo GFCommon::get_base_url() ?>/images/star<?php echo intval( $entry['is_starred'] ) ?>.svg" onclick="ToggleStar(this, '<?php echo esc_js( $entry['id'] ); ?>','<?php echo esc_js( $this->filter ); ?>');" />
+			<img role="presentation" id="star_image_<?php echo esc_attr( $entry['id'] ) ?>" src="<?php echo GFCommon::get_base_url() ?>/images/star<?php echo intval( $entry['is_starred'] ) ?>.svg" onclick="ToggleStar(this, '<?php echo esc_js( $entry['id'] ); ?>','<?php echo esc_js( $this->filter ); ?>');" />
 			<?php
 		}
-		echo '</th>';
+		echo '</td>';
 	}
 
 	/**
@@ -1018,7 +1019,24 @@ final class GF_Entry_List_Table extends WP_List_Table {
 
 		if ( $column_id == $primary ) {
 			$edit_url = $this->get_detail_url( $entry );
-			echo '<a aria-label="' . esc_attr__( 'View this entry', 'gravityforms' ) . '" href="' . $edit_url .'">' . $value . '</a>';
+			$column_value = '<a aria-label="' . esc_attr__( 'View this entry', 'gravityforms' ) . '" href="' . $edit_url . '">' . $value . '</a>';
+
+			/**
+			 * Used to inject markup and replace the value of any primary/first column in the entry list grid.
+			 *
+			 * @param string     $column_value The column value to be filtered. Contains the field value wrapped in a link/a tag.
+			 * @param int        $form_id      The ID of the current form.
+			 * @param int|string $field_id     The ID of the field or the name of an entry column (i.e. date_created).
+			 * @param array      $entry        The Entry object.
+			 * @param string     $query_string The current page's query string.
+			 * @param string     $edit_url     The url to the entry edit page.
+			 * @param string     $value        The value of the field.
+			 */
+			$column_value = apply_filters( 'gform_entries_primary_column_filter', $column_value, $form_id, $field_id, $entry, $query_string, $edit_url, $value );
+
+			// Warning ignored becuase output is expected to be escaped higher up in the chain.
+			// phpcs:ignore
+			echo $column_value;
 		} else {
 
 			/**
@@ -1548,16 +1566,6 @@ final class GF_Entry_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Output the styles
-	 */
-	function output_styles() {
-		$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
-		?>
-		<link rel="stylesheet" href="<?php echo GFCommon::get_base_url() ?>/css/admin<?php echo $min; ?>.css?ver=<?php echo GFForms::$version ?>" type="text/css" />
-		<?php
-	}
-
-	/**
 	 * Output scripts
 	 */
 	function output_scripts() {
@@ -1936,13 +1944,13 @@ final class GF_Entry_List_Table extends WP_List_Table {
 			function getSelectAllText() {
 				var count;
 				count = jQuery("#the-list tr.entry_row:visible:not('#gform-select-all-message')").length;
-				return gformStrings.allEntriesOnPageAreSelected.format(count) + " <a href='javascript:void(0)' onclick='selectAllEntriesOnAllPages();'>" + gformStrings.selectAll.format(gformVars.countAllEntries) + "</a>";
+				return gformStrings.allEntriesOnPageAreSelected.gformFormat(count) + " <a href='javascript:void(0)' onclick='selectAllEntriesOnAllPages();'>" + gformStrings.selectAll.gformFormat(gformVars.countAllEntries) + "</a>";
 			}
 
 			function getSelectAllTr() {
 				var t = getSelectAllText();
 				var colspan = jQuery("#the-list").find("tr:first td").length + 2;
-				return "<tr id='gform-select-all-message' class='no-items' style='display:none;background-color:lightyellow;text-align:center;'><td colspan='{0}'>{1}</td></tr>".format(colspan, t);
+				return "<tr id='gform-select-all-message' class='no-items' style='display:none;background-color:lightyellow;text-align:center;'><td colspan='{0}'>{1}</td></tr>".gformFormat(colspan, t);
 			}
 			function toggleSelectAll(visible) {
 				if (gformVars.countAllEntries <= gformVars.perPage) {
@@ -1969,7 +1977,7 @@ final class GF_Entry_List_Table extends WP_List_Table {
 
 			function selectAllEntriesOnAllPages() {
 				var trHtmlClearSelection;
-				trHtmlClearSelection = gformStrings.allEntriesSelected.format(gformVars.countAllEntries) + " <a href='javascript:void(0);' onclick='clearSelectAllEntries();'>" + gformStrings.clearSelection + "</a>";
+				trHtmlClearSelection = gformStrings.allEntriesSelected.gformFormat(gformVars.countAllEntries) + " <a href='javascript:void(0);' onclick='clearSelectAllEntries();'>" + gformStrings.clearSelection + "</a>";
 				jQuery("#all_entries").val("1");
 				jQuery("#gform-select-all-message td").html(trHtmlClearSelection);
 			}
@@ -1995,11 +2003,22 @@ final class GF_Entry_List_Table extends WP_List_Table {
 				});
 			}
 
-			String.prototype.format = function () {
+			if ( ! String.prototype.gformFormat ) {
+				String.prototype.gformFormat = function() {
+					var args = arguments;
+					return this.replace( /{(\d+)}/g, function( match, number ) {
+						return typeof args[ number ] != 'undefined' ? args[ number ] : match;
+					} );
+				};
+			}
+
+			// deprecated. remove in 2.8
+			String.prototype.format = function() {
 				var args = arguments;
-				return this.replace(/{(\d+)}/g, function (match, number) {
-					return typeof args[number] != 'undefined' ? args[number] : match;
-				});
+				console.warn( 'String.format will be replaced with String.gformFormat in Gravity Forms version 2.8.' );
+				return this.replace( /{(\d+)}/g, function( match, number ) {
+					return typeof args[ number ] != 'undefined' ? args[ number ] : match;
+				} );
 			};
 
 			// end Select All

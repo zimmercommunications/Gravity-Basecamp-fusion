@@ -18,12 +18,22 @@ gform.addFilter( 'gform_datepicker_options_pre_init', function( optionsObj, form
 		showOtherMonths: false,
 		beforeShow: function( input, inst ) {
 			inst.dpDiv[0].classList.remove( 'gform-theme-datepicker' );
+			inst.dpDiv[0].classList.remove( 'gravity-theme' );
+			inst.dpDiv[0].classList.remove( 'gform-theme' );
+			inst.dpDiv[0].classList.remove( 'gform-legacy-datepicker' );
+			inst.dpDiv[0].classList.remove( 'gform-theme--framework' );
+			inst.dpDiv[0].classList.remove( 'gform-theme--foundation' );
+			inst.dpDiv[0].classList.remove( 'gform-theme--orbital' );
 			inst.dpDiv[0].classList.add( 'gform-legacy-datepicker' );
 
 			if ( isRTL && isPreview ) {
 				var $inputContainer = $( input ).closest( '.gfield' );
 				var rightOffset = $( document ).outerWidth() - ( $inputContainer.offset().left + $inputContainer.outerWidth() );
 				inst.dpDiv[ 0 ].style.right = rightOffset + 'px';
+			}
+
+			if ( isPreview ) {
+				inst.dpDiv[0].classList.add( 'gform-preview-datepicker' );
 			}
 			return ! this.suppressDatePicker;
 		}

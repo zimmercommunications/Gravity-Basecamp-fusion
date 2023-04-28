@@ -7,10 +7,24 @@ class Submissions{
     }
     //Function to retrieve the data from the most recent form entry
     public function get_entry($form_ids, $search_criteria = array(), $sorting = null, $paging = null, &$total_count = 1){
+        $data = [];
         //Get an object of all of the most recent entries' data
         $entries = GFAPI::get_entry_ids($form_ids, $search_criteria, $sorting, $paging, $total_count);
         //Pull the ID from the first entry in the $entry object
         $entry_id = GFAPI::get_entry($entries[0]); 
+
+        //Format entry data
+
+        $entry_field_ids = array_keys($entry_id);
+        $i = 0;
+        foreach($entry_id as $field){
+            //if the field is a sub piece of a field another..
+            if($entry_field_ids[$i] ){
+
+            }
+            $i++;
+        }
+
         return $entry_id;       
     //Return entry's fields   
     

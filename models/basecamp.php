@@ -7,9 +7,47 @@ class Basecamp{
     }
     public function send_data($endpoint){
 
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+        CURLOPT_URL => 'https://3.basecampapi.com/4212850/buckets/17409592/todolists/4692674705/todos.json',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => 'POST',
+        CURLOPT_POSTFIELDS =>'{
+        "content": "API Test by Jesse",
+        "description": "<h1>The modest, but handsome web developer</h1>",
+        "due_on": "2023-05-01"
+        }',
+        CURLOPT_HTTPHEADER => array(
+            'Content-Type: application/json',
+            'Authorization: Bearer BAhbB0kiAbB7ImNsaWVudF9pZCI6IjAzODBhN2RmMTEyZmM3MjZkZTY3ODM4MzU3MWJmMDYwNTk3NWU4NWQiLCJleHBpcmVzX2F0IjoiMjAyMy0wNS0wMlQxNjo0NToyN1oiLCJ1c2VyX2lkcyI6WzQzMzY0MzkyXSwidmVyc2lvbiI6MSwiYXBpX2RlYWRib2x0IjoiMzQxZThmNzY1MzdlMWQwOTIzYWVjMTgwNzAyMjQzMGIifQY6BkVUSXU6CVRpbWUNUNAewB5CvbUJOg1uYW5vX251bWkCqQI6DW5hbm9fZGVuaQY6DXN1Ym1pY3JvIgdoEDoJem9uZUkiCFVUQwY7AEY=--f8430303f7a5301edb79731d2b8b360d6bcc463a',
+            'Cookie: _bc3_session=Pri8I%2FDbPcDK4D1ITu94ZfWZARgRSGuXpKHh7Im0XarpGuIGy7fH8Jx2hrLiH1Kyiab1ZXJ0EqfpF8XSn1sa0dsOf4VXZTY3guuirdfYqDOaTkkPOovgEE4mV9YLJji0NKEQL05CuqtoHw%2BdRiXScjqnkNTekeyF%2FUHkNjzKOKy1yi364PK5f976O8oV%2F5HKUEaqEVDCuJ9h2IdI%2BGy7a9QeHNAn695DO76hKfAJClwQh44%2FUORwXpbXCGzMGYyJUxgP7Bnr1L6WXw%3D%3D--MEe1ChSckv8cOCGt--lhxS0Lvx5pWt04kOhiNK9g%3D%3D; force-primary-dc=true'
+        ),
+        ));
+
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+        echo $response;
+
     }
     public function prep_data($data){
+        $data = [
+                "content" => "API Test by Jesse",
+                "assignee_ids" => "",
+                "description" => "",
+                "due_on" => "",
+                "starts_on" => "",
+                "completion_subscriber_ids" => "",
+                "notify" => "", 
+        ];
 
+        return $data;
     }
     public function handle_oauth_response($res){
         return $res;

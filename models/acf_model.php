@@ -2,33 +2,26 @@
 
 class GBF_ACF{
     public function __construct(){
-        // Customize the url setting to fix incorrect asset URLs.
-        add_filter('acf/settings/url', array($this, 'my_acf_settings_url'));
-        //add_filter('acf/load_field/name=form_id', array($this, 'acf_load_form_field_choices'));
-        
-    }
-    public function my_acf_settings_url( $url ) {
-        return MY_ACF_URL;
-    }
-    public function gen_options_page(){
-        if( function_exists('acf_add_options_page') ):
 
+        //add_filter('acf/load_field/name=form_id', array($this, 'acf_load_form_field_choices'));
+
+        // When including the PRO plugin, hide the ACF Updates menu
+        add_filter('acf/settings/show_updates', '__return_false', 100);        
+    }
+
+    public function gen_options_page() {        
+        if( function_exists('acf_add_options_page') ) {    
             acf_add_options_page(array(
-                'page_title' => 'BaseCamp Link',
-                'menu_slug' => 'base-camp-link',
-                'menu_title' => 'BaseCamp Link',
-                'capability' => 'manage_options',
-                'position' => '',
-                'parent_slug' => 'options-general.php',
-                'icon_url' => '',
-                'redirect' => true,
-                'post_id' => 'bcl-options',
-                'autoload' => false,
-                'update_button' => 'Update',
-                'updated_message' => 'Options Updated',
+                'page_title'    => 'BaseCamp Link',
+                'menu_title'    => 'BaseCamp Link',
+                'menu_slug'     => 'base-camp-link',
+                'capability'    => 'manage_options',
+                'redirect'      => false
             ));
-            
-        endif;
+        }
+        else{
+            add_options_page( 'BaseCamp Link', 'BaseCamp Link', 'manage_options', 'base-camp-link', array($this, 'my_plugin_options'));
+        }
     }
     public function gen_options_fields(){
         if( function_exists('acf_add_local_field_group') ):
@@ -41,6 +34,7 @@ class GBF_ACF{
                         'key' => 'field_630e7238af028',
                         'label' => 'Endpoint URL',
                         'name' => 'endpoint_url',
+                        'aria-label' => '',
                         'type' => 'text',
                         'instructions' => 'https://3.basecampapi.com/$ACCOUNT_ID/buckets/$bucket_ID/todolists/$todolist_ID/',
                         'required' => 0,
@@ -60,6 +54,7 @@ class GBF_ACF{
                         'key' => 'field_630e7393af02b',
                         'label' => 'Form ID to Watch',
                         'name' => 'form_id',
+                        'aria-label' => '',
                         'type' => 'select',
                         'instructions' => '',
                         'required' => 0,
@@ -70,8 +65,6 @@ class GBF_ACF{
                             'id' => '',
                         ),
                         'choices' => array(
-                            1 => 1,
-                            2 => 2,
                         ),
                         'default_value' => false,
                         'allow_null' => 0,
@@ -80,22 +73,18 @@ class GBF_ACF{
                         'return_format' => 'value',
                         'ajax' => 0,
                         'placeholder' => '',
+                        'allow_custom' => 0,
+                        'search_placeholder' => '',
                     ),
                     array(
                         'key' => 'field_630e72abaf029',
                         'label' => 'Fields to Send',
                         'name' => 'fields_to_send',
+                        'aria-label' => '',
                         'type' => 'repeater',
                         'instructions' => '',
                         'required' => 0,
-                        'conditional_logic' => array(
-                            array(
-                                array(
-                                    'field' => 'field_630e7393af02b',
-                                    'operator' => '!=empty',
-                                ),
-                            ),
-                        ),
+                        'conditional_logic' => 0,
                         'wrapper' => array(
                             'width' => '',
                             'class' => '',
@@ -106,12 +95,13 @@ class GBF_ACF{
                         'min' => 0,
                         'max' => 0,
                         'layout' => 'table',
-                        'button_label' => '',
+                        'button_label' => 'Add Row',
                         'sub_fields' => array(
                             array(
                                 'key' => 'field_630e7f678a294',
                                 'label' => 'Form Field ID',
                                 'name' => 'form_field_id',
+                                'aria-label' => '',
                                 'type' => 'select',
                                 'instructions' => '',
                                 'required' => 0,
@@ -122,6 +112,12 @@ class GBF_ACF{
                                     'id' => '',
                                 ),
                                 'choices' => array(
+                                    array(
+                                        0 => 'Your Message',
+                                    ),
+                                    array(
+                                        0 => '',
+                                    ),
                                 ),
                                 'default_value' => false,
                                 'placeholder' => '',
@@ -133,11 +129,15 @@ class GBF_ACF{
                                 'ui' => 0,
                                 'ajax' => 0,
                                 'return_format' => 'value',
+                                'allow_custom' => 0,
+                                'search_placeholder' => '',
+                                'parent_repeater' => 'field_630e72abaf029',
                             ),
                             array(
                                 'key' => 'field_630e7f7b8a295',
                                 'label' => 'Map To',
                                 'name' => 'map_to',
+                                'aria-label' => '',
                                 'type' => 'select',
                                 'instructions' => '',
                                 'required' => 0,
@@ -163,8 +163,12 @@ class GBF_ACF{
                                 'return_format' => 'value',
                                 'ajax' => 0,
                                 'placeholder' => '',
+                                'allow_custom' => 0,
+                                'search_placeholder' => '',
+                                'parent_repeater' => 'field_630e72abaf029',
                             ),
                         ),
+                        'rows_per_page' => 20,
                     ),
                 ),
                 'location' => array(
@@ -184,7 +188,7 @@ class GBF_ACF{
                 'hide_on_screen' => '',
                 'active' => true,
                 'description' => '',
-                'show_in_rest' => 0,
+                'show_in_rest' => false,
                 'acfe_display_title' => '',
                 'acfe_autosync' => '',
                 'acfe_form' => 0,

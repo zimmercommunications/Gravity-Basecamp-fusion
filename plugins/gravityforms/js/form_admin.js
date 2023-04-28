@@ -4,13 +4,6 @@
 * Common JS functions for form settings and form editor pages.
 */
 
-var __, _x, _n, _nx;
-__  = wp.i18n.__;
-_x  = wp.i18n._x;
-_n  = wp.i18n._n;
-_nx = wp.i18n._nx;
-
-
 jQuery(document).ready(function($){
 
     gaddon.init();
@@ -20,17 +13,6 @@ jQuery(document).ready(function($){
     $(document).on('change', '.gfield_rule_value_dropdown', function(){
         SetRuleValueDropDown($(this));
     });
-
-    // init merge tag auto complete
-	if ( typeof form != 'undefined' && jQuery( '.merge-tag-support' ).length >= 0 ) {
-
-		jQuery( '.merge-tag-support' ).each( function() {
-
-			new gfMergeTagsObj( form, jQuery( this ) );
-
-		} );
-
-	}
 
 	// For backwards compat.
 	if( window.form ) {
@@ -45,6 +27,20 @@ jQuery(document).ready(function($){
 		});
 	});
 });
+
+/**
+ * Initializes the merge tag tool for fields that support it.
+ *
+ * @since 2.5
+ */
+function initMergeTagSupport() {
+    // init merge tag auto complete
+	if ( typeof form != 'undefined' && jQuery( '.merge-tag-support' ).length >= 0 ) {
+		jQuery( '.merge-tag-support' ).each( function() {
+			new gfMergeTagsObj( form, jQuery( this ) );
+		} );
+	}
+}
 
 function FormatCurrency(element){
 	if(gf_vars.gf_currency_config){
@@ -97,12 +93,16 @@ function GetConditionalObject(objectType){
         object = current_notification;
         break;
 
+    case "button":
+        object = form.button;
+        break;
+
     default:
         object = typeof form != 'undefined' ? form.button : false;
         break;
     }
 
-    object = gform.applyFilters( 'gform_conditional_object', object, objectType )
+    object = gform.applyFilters( 'gform_conditional_object', object, objectType );
 
     return object;
 }
@@ -143,9 +143,6 @@ function CreateConditionalLogic(objectType, obj){
     }
 
     var descPieces = {};
-    if( objectType == "form_button" ) {
-        descPieces.a11yWarning = "<div class='gform-accessibility-warning'><span class='gform-icon gform-icon--accessibility'></span>" + gf_vars.conditional_logic_a11y + "</div>";
-    }
     descPieces.actionType = "<select id='" + objectType + "_action_type' onchange='SetConditionalProperty(\"" + objectType + "\", \"actionType\", jQuery(this).val());'><option value='show' " + showSelected + ">" + showText + "</option><option value='hide' " + hideSelected + ">" + hideText + "</option></select>";
     descPieces.objectDescription = objText;
     descPieces.logicType = "<select id='" + objectType + "_logic_type' onchange='SetConditionalProperty(\"" + objectType + "\", \"logicType\", jQuery(this).val());'><option value='all' " + allSelected + ">" + gf_vars.all + "</option><option value='any' " + anySelected + ">" + gf_vars.any + "</option></select>";
@@ -490,10 +487,6 @@ function GetRuleValuesDropDown(choices, objectType, ruleIndex, selectedValue, in
     return str;
 
 }
-function isEmpty(str){
-	return
-}
-
 
 function SetRuleProperty(objectType, ruleIndex, name, value){
     var obj = GetConditionalObject(objectType);
@@ -506,12 +499,19 @@ function SetRuleProperty(objectType, ruleIndex, name, value){
 }
 
 function GetFieldById( id ) {
+    if ( 'submit' === id ) {
+        return GetSubmitField();
+    }
     id = parseInt( id );
     for(var i=0; i<form.fields.length; i++){
         if(form.fields[i].id == id)
             return form.fields[i];
     }
     return null;
+}
+
+function GetSubmitField() {
+    return { type: "submit", cssClass: "" };
 }
 
 function SetConditionalProperty(objectType, name, value){
@@ -637,6 +637,23 @@ function HasPostField(){
             return true;
     }
     return false;
+}
+
+/**
+ * Determines whether the current form has a page field.
+ *
+ * @since 2.6
+ *
+ * @returns {bool}
+ */
+function HasPageField(){
+
+	for(var i=0; i<form.fields.length; i++){
+		var type = form.fields[i].type;
+		if(type == "page")
+			return true;
+	}
+	return false;
 }
 
 function GetInput(field, id){
@@ -830,10 +847,11 @@ function ConfirmationObj() {
     };
 
 	gaddon.toggleFeedSwitch = function( btn, is_active ) {
+	    var i18n = window.gform_admin_i18n;
 		if ( is_active ) {
-			jQuery( btn ).removeClass( 'gform-status--active' ).addClass( 'gform-status--inactive' ).find( '.gform-status-indicator-status' ).html( __( 'Inactive', 'gravityforms' ) );
+			jQuery( btn ).removeClass( 'gform-status--active' ).addClass( 'gform-status--inactive' ).find( '.gform-status-indicator-status' ).html( i18n.formAdmin.toggleFeedInactive );
 		} else {
-			jQuery( btn ).removeClass( 'gform-status--inactive' ).addClass( 'gform-status--active' ).find( '.gform-status-indicator-status' ).html( __( 'Active', 'gravityforms' ) );
+			jQuery( btn ).removeClass( 'gform-status--inactive' ).addClass( 'gform-status--active' ).find( '.gform-status-indicator-status' ).html( i18n.formAdmin.toggleFeedActive );
 		}
 	};
 
@@ -941,7 +959,9 @@ var gfMergeTagsObj = function( form, element ) {
 
 		self.addMergeTagIcon();
 
-		self.mergeTagIcon.find( 'a.open-list' ).on( 'click.gravityforms', function() {
+		self.mergeTagIcon.find( '.open-list' ).on( 'click.gravityforms', function(e) {
+
+		    e.preventDefault();
 
 			var trigger = jQuery(this);
 
@@ -1001,7 +1021,6 @@ var gfMergeTagsObj = function( form, element ) {
 	self.bindKeyDown = function() {
 
 		self.elem.on( 'keydown.gravityforms', function( event ) {
-
 			var menuActive = self.elem.data( 'autocomplete' ) && self.elem.data( 'autocomplete' ).menu ? self.elem.data( 'autocomplete' ).menu.active : false;
 
 			if ( event.keyCode === jQuery.ui.keyCode.TAB && menuActive ) {
@@ -1063,14 +1082,14 @@ var gfMergeTagsObj = function( form, element ) {
 	}
 
 	/**
-	* Add merge tag drop down icon next to element.
+	* Add merge tag drop down text and icon above element.
 	*/
 	self.addMergeTagIcon = function() {
 
 		var inputType     = self.elem.is( 'input' ) ? 'input' : 'textarea',
 		    positionClass = self.getClassProperty( self.elem, 'position' );
 
-		self.mergeTagIcon  = jQuery( '<span class="all-merge-tags ' + positionClass + ' ' + inputType + '"><a class="open-list tooltip-merge-tag" title="' + gf_vars.mergeTagsTooltip + '"></a></span>' );
+		self.mergeTagIcon  = jQuery( '<span class="all-merge-tags ' + positionClass + ' ' + inputType + '"><button class="open-list tooltip-merge-tag gform-button gform-button--unstyled" title="' + gf_vars.mergeTagsText + '"><i class="gform-icon gform-icon--merge-tag gform-button__icon"></i>' + gf_vars.mergeTagsText + '</button></span>' );
 
 		// Add the target element to the merge tag icon data for reference later when determining where the selected merge tag should be inserted.
 		self.mergeTagIcon.data( 'targetElement', self.elem.attr( 'id' ) );
@@ -1078,24 +1097,15 @@ var gfMergeTagsObj = function( form, element ) {
 		// If "mt-manual_position" class prop is set, look for manual elem with correct class.
 		if ( self.getClassProperty( self.elem, 'manual_position' ) ) {
 
-			var manualClass = '.mt-' + self.elem.attr('id');
-
-			jQuery( manualClass ).append( self.mergeTagIcon );
+            // Make sure we only do this on the mergetag button for this field.
+			var id = self.elem.attr( 'id' ).substring( 1, self.elem.attr( 'id' ).length );
+			jQuery( '#' + id ).find( '.gform-tinymce-mergetag-button' ).append( self.mergeTagIcon );
 
 		} else {
 
 			self.elem.after( self.mergeTagIcon );
 
 		}
-
-		self.mergeTagIcon.find( '.tooltip-merge-tag' ).tooltip( {
-			show:    { delay:1250 },
-            position: {
-                my: 'center bottom',
-                at: 'center-3 top-10'
-            },
-			content: function () { return jQuery( this ).prop( 'title' ); }
-		} );
 
 	}
 
@@ -1104,7 +1114,7 @@ var gfMergeTagsObj = function( form, element ) {
 	*/
 	self.bindMergeTagListClick = function( event ) {
 
-		self.mergeTagList.hide();
+        self.mergeTagList.hide();
 
 		var value = jQuery( event.target ).data('value');
 		var input = self.getTargetElement( event.target );
@@ -1483,12 +1493,13 @@ var gfMergeTagsObj = function( form, element ) {
 				if(!tags.hasOwnProperty(i))
 					continue;
 
-				var tag = tags[i];
+                var tag   = tags[ i ];
+                var label = gform.tools.stripSlashes( tag.label );
 
-				var tagHTML = jQuery( '<a class="" data-value="' + escapeAttr( tag.tag ) + '">' + escapeHtml( tag.label ) + '</a>' );
+				var tagHTML = jQuery( '<a class="" data-value="' + escapeAttr( tag.tag ) + '">' + escapeHtml( label ) + '</a>' );
 				tagHTML.on( 'click.gravityforms', self.bindMergeTagListClick );
 
-				optionsHTML.push( jQuery( '<li></li>' ).html( tagHTML ) );
+                optionsHTML.push( jQuery( '<li></li>' ).html( tagHTML ) );
 
 			}
 
@@ -1589,7 +1600,6 @@ var gfMergeTagsObj = function( form, element ) {
 	self.getTargetElement = function( elem ) {
 		var elem = jQuery( elem );
 		var selector = elem.parents('span.all-merge-tags').data('targetElement')
-
 		/* escape any meta-characters with a double back clash as per jQuery Spec http://api.jquery.com/category/selectors/ */
 		return jQuery( '#' + selector.replace(/[!"#$%&'()*+,.\/:;<=>?@[\\\]^`{|}~]/g, "\\$&") );
 	}
@@ -1711,7 +1721,7 @@ function isSet( $var ) {
  */
 jQuery( document ).ready( function() {
 
-    var $formTitle = jQuery( '.gform-form-toolbar__form-title span' );
+    var $formTitle = jQuery( '.gform-form-toolbar__form-title span:not(.gform-dropdown__trigger-text):not(.gform-dropdown__control-text):not(.gform-visually-hidden)' );
 
     // If form title is not present, exit.
     if ( ! $formTitle ) {
@@ -1787,3 +1797,500 @@ function escapeHtml( string ) {
 		return entityMap[s];
 	} );
 }
+
+/**
+ * Fresh admin only code 2.5 onwards
+ */
+
+var gform = window.gform || {};
+
+//----------------------------------------
+//------ COMPONENTS ----------------------
+//----------------------------------------
+
+/**
+ * Components namespace to house scripts associated with our new 2.5 and up components
+ */
+
+gform.components = gform.components || {};
+
+/**
+ * @function gform.components.dropdown
+ * @description An accessible listbox that allows for a custom function to be passed in for trigger handling on list items.
+ * Passes value of data-value attribute in to the optional custom function.
+ *
+ * @param {Object} options
+ * @constructor
+ */
+
+gform.components.dropdown = function( options ) {
+    this.el = null;
+    this.control = null;
+    this.controlText = null;
+    this.triggers = [];
+    this.state = {
+        open: false,
+        unloading: false,
+    };
+    this.options = {
+        closeOnSelect: true,
+        container : document,
+        detectTitleLength: false,
+        onItemSelect: function() {},
+        reveal: 'click',
+        selector : '',
+        showSpinner: false,
+        swapLabel: true,
+        titleLengthThresholdMedium: 23,
+        titleLengthThresholdLong: 32,
+    };
+
+    this.options = gform.tools.mergeObjects( this.options, gform.tools.defaultFor( options, {} ) );
+
+    this.el = gform.tools.getNodes( this.options.selector, false, this.options.container )[ 0 ];
+    if ( ! this.el ) {
+        gform.console.error( 'Gform dropdown couldn\'t find [data-js="' + this.options.selector + '"] to instantiate on.');
+        return;
+    }
+    this.titleEl = gform.tools.getNodes( 'gform-dropdown-control-text', false, this.el )[ 0 ];
+
+    this.storeTriggers();
+    this.bindEvents();
+    this.setupUI();
+
+    this.hideSpinner = function() {
+        this.el.classList.remove( 'gform-dropdown--show-spinner' );
+    }
+
+    this.showSpinner = function() {
+        this.el.classList.add( 'gform-dropdown--show-spinner' );
+    }
+}
+
+gform.components.dropdown.prototype.handleChange = function( e ) {
+    this.options.onItemSelect( e.target.dataset.value );
+    if ( this.options.showSpinner ) {
+        this.showSpinner();
+    }
+    if ( this.options.swapLabel ) {
+        this.controlText.innerText = e.target.innerText;
+    }
+    if ( this.options.closeOnSelect ) {
+        this.handleControl();
+    }
+};
+
+gform.components.dropdown.prototype.handleControl = function() {
+    if ( this.state.open ) {
+        this.closeDropdown();
+    } else {
+        this.openDropdown();
+    }
+};
+
+gform.components.dropdown.prototype.openDropdown = function() {
+    if ( this.state.open ) {
+        return;
+    }
+    this.el.classList.add( 'gform-dropdown--reveal' );
+    setTimeout( function() {
+        this.el.classList.add( 'gform-dropdown--open' );
+        this.control.setAttribute( 'aria-expanded', 'true' );
+        this.state.open = true;
+    }.bind( this ), 25 );
+    setTimeout( function() {
+        this.el.classList.remove( 'gform-dropdown--reveal' );
+    }.bind( this ), 200 );
+};
+
+gform.components.dropdown.prototype.closeDropdown = function() {
+    this.state.open = false;
+    this.el.classList.remove( 'gform-dropdown--open' );
+    this.el.classList.add( 'gform-dropdown--hide' );
+    this.control.setAttribute( 'aria-expanded', 'false' );
+    setTimeout( function() {
+        this.el.classList.remove( 'gform-dropdown--hide' );
+    }.bind( this ), 150 );
+};
+
+gform.components.dropdown.prototype.handleMouseenter = function() {
+    if ( this.options.reveal !== 'hover' || this.state.open || this.state.unloading ) {
+        return;
+    }
+    this.openDropdown();
+};
+
+gform.components.dropdown.prototype.handleMouseleave = function( e ) {
+    if ( this.options.reveal !== 'hover' || this.state.unloading ) {
+        return;
+    }
+    this.closeDropdown();
+};
+
+gform.components.dropdown.prototype.handleA11y = function( e ) {
+    if ( ! this.state.open ) {
+        return;
+    }
+    if ( e.keyCode === 27 ) {
+        this.closeDropdown();
+        this.control.focus();
+        return;
+    }
+    if ( e.keyCode === 9  && ! gform.tools.getClosest( e.target, '[data-js="' + this.options.selector + '"]' ) ) {
+        this.triggers[0].focus();
+    }
+};
+
+gform.components.dropdown.prototype.handleSearch = function( e ) {
+    var search = e.target.value.toLowerCase();
+    this.triggers.forEach( function( trigger ) {
+        if ( trigger.innerText.toLowerCase().includes( search ) ) {
+            trigger.parentNode.style.display = '';
+        } else {
+            trigger.parentNode.style.display = 'none';
+        }
+    } );
+};
+
+gform.components.dropdown.prototype.setupUI = function() {
+    if ( this.options.reveal === 'hover' ) {
+        this.el.classList.add( 'gform-dropdown--hover' );
+    }
+    if ( this.options.detectTitleLength ) {
+        // add a class to the container of the dropdown if displayed title is long.
+        // class doesnt do anything by default, you have to wire css if you want to do some handling for long titles
+        // dropdown is just always full width of its container
+        var title = this.titleEl ? this.titleEl.innerText : '';
+        if ( title.length > this.options.titleLengthThresholdMedium && title.length <= this.options.titleLengthThresholdLong ) {
+            this.el.parentNode.classList.add( 'gform-dropdown--medium-title' );
+        } else if ( title.length > this.options.titleLengthThresholdLong ) {
+            this.el.parentNode.classList.add( 'gform-dropdown--long-title' );
+        }
+    }
+};
+
+gform.components.dropdown.prototype.storeTriggers = function() {
+    this.control = gform.tools.getNodes( 'gform-dropdown-control', false, this.el )[ 0 ];
+    this.controlText = gform.tools.getNodes( 'gform-dropdown-control-text', false, this.control )[ 0 ];
+    this.triggers = gform.tools.getNodes( 'gform-dropdown-trigger', true, this.el );
+};
+
+gform.components.dropdown.prototype.bindEvents = function() {
+    gform.tools.delegate(
+        '[data-js="' + this.options.selector + '"]',
+        'click',
+        '[data-js="gform-dropdown-trigger"], [data-js="gform-dropdown-trigger"] > span',
+        this.handleChange.bind( this )
+    );
+    gform.tools.delegate(
+        '[data-js="' + this.options.selector + '"]',
+        'click',
+        '[data-js="gform-dropdown-trigger"]',
+        this.handleChange.bind( this )
+    );
+    gform.tools.delegate(
+        '[data-js="' + this.options.selector + '"]',
+        'click',
+        '[data-js="gform-dropdown-control"], [data-js="gform-dropdown-control"] *',
+        this.handleControl.bind( this )
+    );
+    gform.tools.delegate(
+        '[data-js="' + this.options.selector + '"]',
+        'keyup',
+        '[data-js="gform-dropdown-search"]',
+        this.handleSearch.bind( this )
+    );
+
+    this.el.addEventListener( 'mouseenter', this.handleMouseenter.bind( this ) );
+    this.el.addEventListener( 'mouseleave', this.handleMouseleave.bind( this ) );
+    this.el.addEventListener( 'keyup', this.handleA11y.bind( this ) );
+
+    document.addEventListener( 'keyup', this.handleA11y.bind( this ) );
+    document.addEventListener( 'click', function( event ) {
+        if ( this.el.contains( event.target ) || ! this.state.open ) {
+            return;
+        }
+        this.handleControl();
+    }.bind( this ) );
+
+    // store unloading state to make sure item stays closed during this event
+    addEventListener( 'beforeunload', function() {
+        this.state.unloading = true;
+    }.bind( this ));
+};
+
+/**
+ * Alert Component
+ *
+ * Inits any gform specific Alert component instances either on init via data-attribute, by method
+ * call, or by custom event. Stores instances with reference dom id for later manipulation if needed.
+ *
+ * You have 3 ways to trigger an init on your Alert component element:
+ *
+ * 1) Place an attribute of data-js="gform-alert" on the el, data-js="gform-alert-dismiss-trigger" on
+ * the dismiss button (plus data-gform-alert-cookie="cookieName" on the el if you want a 24 hour cookie based
+ * dismissal vs. only a display none dismissal).
+ * 2) Calling gform.components.alert.initializeInstance( HTMLElement ), probably in gform.initializeOnLoaded.
+ * 3) Injecting your element into the dom and then calling gform.tools.trigger( 'gform_init_alerts' ) making
+ * sure to add the various data attributes as outlined in the component documentation and in #1 above to the
+ * injected HTML'S container.
+ *
+ * You will find your instances on the object gform.components.alert.instances. Each instance has an id which
+ * relates to the dom node it was initialized on and its attribute of data-gform-alert-instance. We provide a
+ * getInstance method. Say you want to get an instance only knowing your element you initialized it on:
+ *
+ * var myInstance = gform.components.alert.getInstance( HTMLElement );
+ *
+ * @since 2.5.8
+ */
+
+gform.components.alert = {
+    /**
+     * Initialized instances are stored here with an array of objects.
+     */
+    instances: [],
+
+    /**
+     * @function gform.components.alert.getInstance
+     * @description Get an Alert instance by element it was rendered on.
+     *
+     * @since 2.5.8
+     *
+     * @param {HTMLElement} element The element you initialize Alert on.
+     *
+     * @returns {*}
+     */
+    getInstance: function( element ) {
+        return gform.components.alert.instances.filter( function( instance ) {
+            return instance.id === element.getAttribute( 'data-gform-alert-instance' ); }
+        )[ 0 ];
+    },
+
+    /**
+     * @function gform.components.alert.initializeInstance
+     * @description Initialize a Alert instance and store on our instances object.
+     *
+     * @since 2.5.8
+     *
+     * @param {HTMLElement} element
+     */
+    initializeInstance: function( element ) {
+        if ( element.hasAttribute( 'data-gform-alert-instance' ) ) {
+            return;
+        }
+
+        var uid = gform.tools.uniqueId( 'gform-alert' );
+        var cookie = element.hasAttribute( 'data-gform-alert-cookie' ) ? element.getAttribute( 'data-gform-alert-cookie' ) : '';
+
+        element.setAttribute( 'data-gform-alert-instance', uid );
+        element.classList.add( 'gform-initialized' );
+
+        gform.components.alert.instances.push( {
+            id: uid,
+            cookie: cookie
+        } );
+    },
+
+    /**
+     * @function gform.components.alert.initializeInstances
+     * @description Initialize any uninitialized Alert instances in the DOM.
+     *
+     * @since 2.5.8
+     *
+     * @param {HTMLElement} element
+     */
+    initializeInstances: function() {
+        gform.tools
+            .getNodes( '[data-js="gform-alert"]:not(.gform-initialized)', true, document, true )
+            .forEach( gform.components.alert.initializeInstance );
+    },
+
+    /**
+     * @function gform.components.alert.dismissAlert
+     * @description Implements hiding of an alert and sets up cookie if it has been configured via
+     * the data-gform-alert-cookie attribute on the parent el.
+     *
+     * @since 2.5.8
+     */
+    dismissAlert: function( e ) {
+        var parentEl = gform.tools.getClosest( e.target, '[data-js="gform-alert"]' );
+        var instance = gform.components.alert.getInstance( parentEl );
+        parentEl.style.display = 'none';
+        if ( instance.cookie ) {
+            gform.tools.setCookie( instance.cookie, form.id, 1, true );
+        }
+    },
+
+    /**
+     * @function gform.components.alert.bindEvents
+     * @description Bind event listeners for this namespace.
+     *
+     * @since 2.5.8
+     */
+    bindEvents: function() {
+        document.addEventListener( 'gform_init_alerts', gform.components.alert.initializeInstances );
+        gform.tools.delegate( 'body', 'click', '[data-js="gform-alert-dismiss-trigger"]', gform.components.alert.dismissAlert );
+    },
+
+    /**
+     * @function gform.components.alert.init
+     * @description Initialize this module.
+     *
+     * @since 2.5.8
+     */
+    init: function() {
+        gform.components.alert.bindEvents();
+        gform.components.alert.initializeInstances();
+    }
+};
+
+gform.initializeOnLoaded( gform.components.alert.init );
+
+//------------------------------------------------
+//---------- SIMPLEBAR ---------------------------
+//------------------------------------------------
+
+/**
+ * Inits any gform specific SimpleBar instances that can't be initialized by the data attribute, either on init,
+ * by method call or by custom event. Stores instances with reference dom id for later manipulation if needed.
+ *
+ * Make sure to enqueue 'gform_simplebar' before using the techniques below.
+ *
+ * You have 3 ways to trigger a render on your element:
+ *
+ * 1) Place an attribute of data-simplebar (plus data-simplebar-direction="rtl" if in rtl) on the el.
+ * 2) Calling gform.simplebar.initializeInstance( HTMLElement ), probably in gform.initializeOnLoaded.
+ * 3) Injecting your element into the dom and then calling gform.tools.trigger( 'gform_render_simplebars' ) making
+ * sure to add data-js="gform-simplebar" to the injected HTML'S container.
+ *
+ * You will find your instances on the object gform.simplebar.instances. Each instance has an id which relates to the dom
+ * node it was initialized on and its attribute of data-simplebar-instance. We provide a getInstance method. Say you
+ * want to get an instance only knowing your element you initialized it on:
+ *
+ * var myInstance = gform.simplebar.getInstance( HTMLElement );
+ *
+ * https://github.com/Grsmto/simplebar/tree/master/packages/simplebar
+ *
+ */
+
+gform.simplebar = {
+    /**
+     * Initialized instances are stored here with an array of objects. Each instance looks like:
+     *
+     */
+    instances: [],
+
+    /**
+     * @function gform.simplebar.cleanInstances
+     * @description Cleans out any instances that were removed in between the last call and this one to render.
+     *
+     * @since 2.5.6
+     */
+    cleanInstances: function() {
+        gform.simplebar.instances = gform.simplebar.instances.filter( function( instance, index ) {
+            var exists = gform.tools.getNodes( '[data-simplebar-instance="' + instance.id + '"]', false, document, true )[ 0 ];
+            if ( exists ) {
+                return true;
+            }
+            gform.simplebar.instances[ index ].instance.unMount();
+            return false;
+        } );
+    },
+
+    /**
+     * @function gform.simplebar.getInstance
+     * @description Get a SimpleBar instance by element it was rendered on.
+     *
+     * @since 2.5.6
+     *
+     * @param {HTMLElement} element The element you initialize SimpleBar on.
+     *
+     * @returns {*}
+     */
+    getInstance: function( element ) {
+        var instanceObj = gform.simplebar.instances.filter( function( instance ) {
+            return instance.id === element.getAttribute( 'data-simplebar-instance' ); }
+        )[ 0 ];
+        return instanceObj.instance;
+    },
+
+    /**
+     * @function gform.simplebar.initializeInstance
+     * @description Initialize a SimpleBar instance and store on our instances object.
+     * You can delay initialization of an instance by a data attribute of data-simplebar-delay (helpful if say
+     * your container is part of some jquery ui or other third party display logic).
+     *
+     * @since 2.5.6
+     *
+     * @param {HTMLElement} element
+     */
+    initializeInstance: function( element ) {
+        if ( element.hasAttribute( 'data-simplebar-instance' ) ) {
+            return;
+        }
+        var uid = gform.tools.uniqueId( 'simplebar' );
+        var delayAttr = element.getAttribute( 'data-simplebar-delay' );
+        var delay = delayAttr ? parseInt( delayAttr, 10 ) : 0;
+
+        setTimeout( function() {
+            var direction = gform.tools.isRtl() ? 'rtl' : 'ltr';
+
+            if ( direction === 'rtl' ) {
+                element.setAttribute( 'data-simplebar-direction', 'rtl' );
+            }
+            element.setAttribute( 'data-simplebar-instance', uid );
+            element.classList.add( 'gform-initialized' );
+
+            var simplebar = new SimpleBar( element, {
+                direction: direction,
+            } );
+
+            gform.simplebar.instances.push( {
+                id: uid,
+                instance: simplebar,
+            } );
+        }, delay );
+    },
+
+    /**
+     * @function gform.simplebar.initializeInstances
+     * @description Start by cleaning any zombie instances, then initialize any uninitialized SimpleBar instances in
+     * the DOM.
+     *
+     * @since 2.5.6
+     *
+     * @param {HTMLElement} element
+     */
+    initializeInstances: function() {
+        gform.simplebar.cleanInstances();
+        gform.tools
+            .getNodes( '[data-js="gform-simplebar"]:not(.gform-initialized)', true, document, true )
+            .forEach( gform.simplebar.initializeInstance );
+    },
+
+    /**
+     * @function gform.simplebar.bindEvents
+     * @description Bind event listeners for this namespace.
+     *
+     * @since 2.5.6
+     */
+    bindEvents: function() {
+        document.addEventListener( 'gform_render_simplebars', gform.simplebar.initializeInstances );
+    },
+
+    /**
+     * @function gform.simplebar.init
+     * @description Initialize this module if SimpleBar is enqueued.
+     *
+     * @since 2.5.6
+     */
+    init: function() {
+        if ( ! window.SimpleBar ) {
+            return;
+        }
+        gform.simplebar.bindEvents();
+        gform.simplebar.initializeInstances();
+    }
+};
+
+gform.initializeOnLoaded( gform.simplebar.init );

@@ -10,7 +10,16 @@ License URI:  https://www.gnu.org/licenses/gpl-2.0.html
 */
 session_start();
 
-setcookie('test', 'hi dad', time()+60*60*24*30);
+function option_exists($name, $site_wide=false){
+    global $wpdb; return $wpdb->query("SELECT * FROM ". ($site_wide ? $wpdb->base_prefix : $wpdb->prefix). "options WHERE option_name ='$name' LIMIT 1");
+}
+
+if(!option_exists("basecamp_token")){
+    add_option('basecamp_token', '');
+}
+if(!option_exists("oauth2state")){
+    add_option('oauth2state', '');
+}
 
 define("PROJECT_ROOT_PATH", __DIR__ );
 define( 'MY_ACF_PATH', plugin_dir_path(__FILE__) . 'plugins/acf' );

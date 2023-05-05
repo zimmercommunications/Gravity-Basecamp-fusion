@@ -5,7 +5,7 @@ class Basecamp{
     public function __construct(){
 
     }
-    public function send_data($endpoint){
+    public function send_data($endpoint, $postfields){
 
         $curl = curl_init();
 
@@ -18,11 +18,7 @@ class Basecamp{
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => 'POST',
-        CURLOPT_POSTFIELDS =>'{
-        "content": "API Test by Jesse",
-        "description": "<h1>The modest, but handsome web developer</h1>",
-        "due_on": "2023-05-01"
-        }',
+        CURLOPT_POSTFIELDS => $postfields,
         CURLOPT_HTTPHEADER => array(
             'Content-Type: application/json',
             'Authorization: Bearer BAhbB0kiAbB7ImNsaWVudF9pZCI6IjAzODBhN2RmMTEyZmM3MjZkZTY3ODM4MzU3MWJmMDYwNTk3NWU4NWQiLCJleHBpcmVzX2F0IjoiMjAyMy0wNS0wMlQxNjo0NToyN1oiLCJ1c2VyX2lkcyI6WzQzMzY0MzkyXSwidmVyc2lvbiI6MSwiYXBpX2RlYWRib2x0IjoiMzQxZThmNzY1MzdlMWQwOTIzYWVjMTgwNzAyMjQzMGIifQY6BkVUSXU6CVRpbWUNUNAewB5CvbUJOg1uYW5vX251bWkCqQI6DW5hbm9fZGVuaQY6DXN1Ym1pY3JvIgdoEDoJem9uZUkiCFVUQwY7AEY=--f8430303f7a5301edb79731d2b8b360d6bcc463a',
@@ -52,11 +48,8 @@ class Basecamp{
     public function handle_oauth_response($res){
         return $res;
     }
-    public function get_token(WP_REST_Request $request){
-        /* replaced $_GET['state'] referrences with the variable $authState */
-        $authState = $request['state'];
-        /* replaced $_GET['code'] referrences with the variable $code */
-        $code = $request['code'];
+    //Function to initiate the authentication process.
+    public function get_token(){
 
         $provider = new Stevenmaguire\OAuth2\Client\Provider\Basecamp([
             'clientId'          => '0380a7df112fc726de678383571bf0605975e85d',

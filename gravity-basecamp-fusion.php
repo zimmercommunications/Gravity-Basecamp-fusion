@@ -15,10 +15,10 @@ function option_exists($name, $site_wide=false){
 }
 
 if(!option_exists("basecamp_token")){
-    add_option('basecamp_token', '');
+    add_option('basecamp_token', 0);
 }
 if(!option_exists("oauth2state")){
-    add_option('oauth2state', '');
+    add_option('oauth2state', 0);
 }
 
 define("PROJECT_ROOT_PATH", __DIR__ );

@@ -36,7 +36,7 @@ class GBF_ACF{
                         'name' => 'endpoint_url',
                         'aria-label' => '',
                         'type' => 'text',
-                        'instructions' => 'https://3.basecampapi.com/$ACCOUNT_ID/buckets/$bucket_ID/todolists/$todolist_ID/',
+                        'instructions' => '<a href="https://dev.clear99.com/wp-json/gbf/v1/auth">Authorize</a> <br> <a href="https://launchpad.37signals.com/authorization/new">Refresh Token</a> <br> Endpoint URL Example: https://3.basecampapi.com/$ACCOUNT_ID/buckets/$bucket_ID/todolists/$todolist_ID/',
                         'required' => 0,
                         'conditional_logic' => 0,
                         'wrapper' => array(

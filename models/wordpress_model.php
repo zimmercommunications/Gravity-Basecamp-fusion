@@ -18,6 +18,7 @@ class WordPress{
           )
         );
       }
+
     public function handle_oauth_res(WP_REST_Request $request){
         /* replaced $_GET['state'] referrences with the variable $authState */
         $authState = $request['state'];

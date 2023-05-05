@@ -13,7 +13,7 @@ class GBF_Controller{
         // if(empty($_SESSION['basecamptoken'])){
         //     $bc_model::get_token();
         // }
-        if(!isset($_COOKIE['basecamptoken'])){
+        if(!get_option('basecamp_token')){
             $bc_model::get_token();
         }
         //Configure Endpoint for Auth Token retrieval. Set the Endpoint to fire the 
@@ -57,11 +57,11 @@ class GBF_Controller{
         // reset choices
         $field['choices'] = array();
         $submissions = new Submissions;
-        echo '<script type="text/javascript">console.log("Field IDs")</script>';  
+        //echo '<script type="text/javascript">console.log("Field IDs")</script>';  
         $choices = $submissions::get_forms_v2();          
-        echo '<script type="text/javascript">console.log('.json_encode($choices).')</script>';
+        //echo '<script type="text/javascript">console.log('.json_encode($choices).')</script>';
         $choices_keys = array_keys($choices);
-        echo '<script type="text/javascript">console.log('.json_encode($choices_keys).')</script>';
+        //echo '<script type="text/javascript">console.log('.json_encode($choices_keys).')</script>';
         // loop through array and add to field 'choices'
         if( is_array($choices) ) {
             $i = 0;
@@ -153,17 +153,35 @@ class GBF_Controller{
         //$field_choices = get_field_object('field_630e72abaf029')['choices'];
 
         //Data retrieval from ACF 
+        $postfields = [];
         if(have_rows('fields_to_send', 'options')):
             while(have_rows('fields_to_send', 'options')) : the_row();
                 $value = get_sub_field('form_field_id');
-                $key = get_sub_field('map_to');
+                $key = get_sub_field('map_to');                
+                $postfields[$key] = $value;
+
             endwhile;
         endif;
             
   
-        //Prepare Data for BaseCamp        
+        //Prepare Data for BaseCamp by json_encoding it...       
 
-        //Send data to BaseCamp
+        //Expected data form example:
+        // '{
+        //     "content": "API Test by Jesse",
+        //     "description": "<h1>The modest, but handsome web developer</h1>",
+        //     "due_on": "2023-05-01"
+        // }'
+
+        if(get_field('endpoint_url', 'options')){
+            //Send data to BaseCamp via the basecamp class's method
+            $bc_model::send_data(get_field('endpoint_url', 'options'), json_encode($postfields));
+
+        }      
+
+
+
+        
 
     }
 }

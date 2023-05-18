@@ -14,18 +14,36 @@ class Submissions{
         $entry_id = GFAPI::get_entry($entries[0]); 
 
         //Format entry data
-
         $entry_field_ids = array_keys($entry_id);
         $i = 0;
         foreach($entry_id as $field){
-            //if the field is a sub piece of a field another..
-            if($entry_field_ids[$i] ){
-
+            //Check if this field's key is a form field or form stat (form fields are numeric)...
+            if(is_numeric($entry_field_ids[$i])){
+                //if the field is a sub piece of a field another..
+                if(preg_match('/\d+\.\d+/', $entry_field_ids[$i])){
+                    //Identify the base field (if it was 3.3, it will be 3)
+                    $parentField = floor($entry_field_ids[$i]);
+                    //If there is data in the parent field..
+                    if($data[$parentField]){
+                        //Append the sub field's data to the base field (with space).
+                        $data[$parentField] = $data[$parentField] . " " . $field;
+                    }
+                    //Put data in the parent field to initalize it.
+                    else{
+                        $data[$parentField] = $field;
+                    }
+                }
+                //Field's key is not a float..
+                else{
+                    //array_push($is_floats, 'false');
+                    $data[$i + 1] = $field;
+                }
             }
             $i++;
         }
 
-        return $entry_id;       
+    //return $entry_id;       
+    return $data;
     //Return entry's fields   
     
 

@@ -134,7 +134,10 @@ class GBF_Controller{
 
         $form_ids = get_field('form_id', 'options');
         
-
+        //Variable to hold the new form entry
+        $entry_obj = $gf_model::get_entry($form_ids, $search_criteria, $sorting, $paging, $total_count);
+        echo '<script type="text/javascript">console.log("Entry Obj")</script>'; 
+        echo '<script type="text/javascript">console.log('.json_encode($entry_obj).')</script>'; 
         //? IDK what I'm testing for here.
         //echo '<pre>'.print_r(GFAPI::get_fields_by_type($form_obj, array('card', 'checkbox', 'checkbox_and_select', 'custom_field', 'dynamic_field_map', 'field_map', 'field_select', 'generic_map', 'hidden', 'post_select', 'radio_button', 'save_button', 'select', 'select_custom', 'simple_condition', 'text', 'textarea'), true)).'</pre>';        
         
@@ -146,13 +149,10 @@ class GBF_Controller{
         //Data retrieval from ACF TODO: this may be broken..
         $postfields = [];
         if(have_rows('fields_to_send', 'options')):
-            //Variable to hold the new form entry
-            $entry_obj = $gf_model::get_entry($form_ids, $search_criteria, $sorting, $paging, $total_count);
-            echo '<script type="text/javascript">console.log("Entry Obj")</script>'; 
-            echo '<script type="text/javascript">console.log('.json_encode($entry_obj).')</script>'; 
             while(have_rows('fields_to_send', 'options')) : the_row();
                 $value_key = get_sub_field('form_field_id'); // Eg. '14'
-                $value = $entry_obj[$value_key]; //This is coming up NULL for some reason.
+                echo $value_key . " " . gettype($value_key);
+                $value = $entry_obj['7']; //This is coming up NULL for some reason. There is a mis-match between the Form Field ID & the $entry_obj's keys.
                 $key = get_sub_field('map_to');  // Eg. 'content'              
                 $postfields[$key] = $value;
 
@@ -172,7 +172,7 @@ class GBF_Controller{
 
         if(get_field('endpoint_url', 'options')){
             //Send data to BaseCamp via the basecamp class's method
-            $bc_model::send_data(get_field('endpoint_url', 'options'), json_encode($postfields));
+            //$bc_model::send_data(get_field('endpoint_url', 'options'), json_encode($postfields)); //Disabled for testing.
 
         }      
 

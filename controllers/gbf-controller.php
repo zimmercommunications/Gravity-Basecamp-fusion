@@ -150,11 +150,19 @@ class GBF_Controller{
         $postfields = [];
         if(have_rows('fields_to_send', 'options')):
             while(have_rows('fields_to_send', 'options')) : the_row();
-                $value_key = get_sub_field('form_field_id'); // Eg. '14'
-                echo $value_key . " " . gettype($value_key);
-                $value = $entry_obj['7']; //This is coming up NULL for some reason. There is a mis-match between the Form Field ID & the $entry_obj's keys.
-                $key = get_sub_field('map_to');  // Eg. 'content'              
-                $postfields[$key] = $value;
+                $key = get_sub_field('map_to');  // Eg. 'content'  
+                if($key == 'assignee_ids'){
+                    $value_key = get_sub_field('form_field_id'); // Eg. 'Jesse'
+                    //Get Basecamp ID from data object
+                    $user_id = $bc_model::get_user_ID($value_key);
+                
+                    $postfields[$key] = $user_id;
+                }else{
+                    $value_key = get_sub_field('form_field_id'); // Eg. '14'
+                    $value = $entry_obj[$value_key]; 
+                
+                    $postfields[$key] = $value;
+                }
 
             endwhile;
         endif;

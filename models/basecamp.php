@@ -145,8 +145,8 @@ class Basecamp{
 
 
     //Psuedo API to retrieve user data - TODO actually fetch user data from BC3 API
-    public function get_user_ID($target_name){
-        $users = '
+    public function get_user_ID($query_string){
+        $users_json = '
         [
             {
                 "id": 24712099,
@@ -341,16 +341,17 @@ class Basecamp{
                 "can_manage_people": true
             }
         ]';
-        echo '<script type="text/javascript">console.log("Users")</script>'; 
-        echo '<script type="text/javascript">console.log('.json_encode($users).')</script>'; 
-        $selected = array_filter($users, function($v, $k){
-            if(str_contains($v['name'], $target_name)){
-                return true;
-            }else{
-                return false;
-            }   
-        }, ARRAY_FILTER_USE_BOTH);
-        return $selected[0]['id'];
+        $users = json_decode($users_json, true);
+        // echo '<script type="text/javascript">console.log("Users")</script>'; 
+        // echo '<script type="text/javascript">console.log('.json_encode($users).')</script>'; 
+
+        foreach ($users as $object) {
+            if (isset($object['name']) && strpos($object['name'], $query_string) !== false) {
+              return $object['id'];
+            }
+          }
+        
+          return null; // Return null if no matching name is found
     }
 
 }

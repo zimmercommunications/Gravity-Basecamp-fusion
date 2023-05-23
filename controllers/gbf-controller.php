@@ -151,16 +151,18 @@ class GBF_Controller{
         if(have_rows('fields_to_send', 'options')):
             while(have_rows('fields_to_send', 'options')) : the_row();
                 $key = get_sub_field('map_to');  // Eg. 'content'  
-                if($key == 'assignee_ids'){
-                    $value_key = get_sub_field('form_field_id'); // Eg. 'Jesse'
+                if($key === 'assignee_ids'){
+                    $value_key = get_sub_field('form_field_id'); // Eg. '13'
+                    $value = $entry_obj[$value_key]; // Eg. 'Jesse'
+
                     //Get Basecamp ID from data object
-                    $user_id = $bc_model::get_user_ID($value_key);
+                    $user_id = $bc_model::get_user_ID($value);
                 
                     $postfields[$key] = $user_id;
                 }else{
                     $value_key = get_sub_field('form_field_id'); // Eg. '14'
                     $value = $entry_obj[$value_key]; 
-                
+                    
                     $postfields[$key] = $value;
                 }
 
@@ -180,7 +182,7 @@ class GBF_Controller{
 
         if(get_field('endpoint_url', 'options')){
             //Send data to BaseCamp via the basecamp class's method
-            //$bc_model::send_data(get_field('endpoint_url', 'options'), json_encode($postfields)); //Disabled for testing.
+            $bc_model::send_data(get_field('endpoint_url', 'options'), json_encode($postfields)); //Disabled for testing.
 
         }      
 

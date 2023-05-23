@@ -10,22 +10,46 @@ class Submissions{
         $data = [];
         //Get an object of all of the most recent entries' data
         $entries = GFAPI::get_entry_ids($form_ids, $search_criteria, $sorting, $paging, $total_count);
+
         //Pull the ID from the first entry in the $entry object
         $entry_id = GFAPI::get_entry($entries[0]); 
+        echo '<script type="text/javascript">console.log("Raw Entry")</script>';
+        echo '<script type="text/javascript">console.log('.json_encode($entry_id).')</script>';
 
         //Format entry data
-
         $entry_field_ids = array_keys($entry_id);
+        echo '<script type="text/javascript">console.log("Raw Entry Keys")</script>';
+        echo '<script type="text/javascript">console.log('.json_encode($entry_field_ids).')</script>';
         $i = 0;
-        foreach($entry_id as $field){
-            //if the field is a sub piece of a field another..
-            if($entry_field_ids[$i] ){
-
+        foreach($entry_field_ids as $field_key){ // "3.3"
+            //Check if this field's key is a form field or form stat (form fields are numeric)...
+            if(is_numeric($field_key)){ // true
+                //if the field is a sub piece of a field another..
+                if(preg_match('/\d+\.\d+/', $field_key)){ //true
+                    //Identify the base field (if it was 3.3, it will be 3)
+                    $parentField = floor($field_key); // 3
+                    //If there is data in the parent field..
+                    if($data[$parentField]){
+                        //Append the sub field's data to the base field (with space).
+                        $data[$parentField] = $data[$parentField] . " " . $entry_id[$field_key];
+                    }
+                    //Put data in the parent field to initalize it.
+                    else{
+                        $data[$parentField] = $entry_id[$field_key];
+                    }
+                }
+                //Field's key is not a float..
+                else{
+                    //array_push($is_floats, 'false');
+                    //$data[$i + 1] = $field;
+                    $data[$field_key] = $entry_id[$field_key];
+                }
             }
             $i++;
         }
 
-        return $entry_id;       
+    //return $entry_id;       
+    return $data;
     //Return entry's fields   
     
 

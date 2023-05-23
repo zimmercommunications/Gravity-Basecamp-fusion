@@ -9,12 +9,11 @@ class GBF_Controller{
         $wp_model = new WordPress;
         $bc_model = new Basecamp;
 
-        //Check/get token from BaseCamp Auth Server
-        // if(empty($_SESSION['basecamptoken'])){
-        //     $bc_model::get_token();
-        // }
-        if(!get_option('basecamp_token')){
-            $bc_model::get_token();
+        //Check if either token has expired, or if no token exists, check if it has an auth state to retrive a new token. TO-DO Something is broken with this and causes a loop with the auth server.
+        $token = get_option('basecamp_token');
+        $auth_state = $_COOKIE['auth2state'];
+        if( $token == 0 || !$token || !$auth_state){
+        //    $bc_model::get_token_v2();
         }
         //Configure Endpoint for Auth Token retrieval. Set the Endpoint to fire the 
         // add_action('rest_api_init', function(){
@@ -27,16 +26,12 @@ class GBF_Controller{
         $acf_model::gen_options_page();
         $acf_model::gen_options_fields();
 
-
-
         // Customize the url setting to fix incorrect asset URLs.
-        add_filter('acf/settings/url', array($this, 'my_acf_settings_url'));
-        
+        add_filter('acf/settings/url', array($this, 'my_acf_settings_url'));        
 
         add_filter('acf/load_field/name=form_id', array($this, 'update_form_field_choices'), 10);
         add_filter('acf/load_field/name=form_field_id', array($this, 'update_form_fields_id_choices'), 9); //Using the below filter to targe the parent field first.
         //add_filter('acf/load_field/name=fields_to_send', array($this, 'update_form_fields_id_choices'), 9); 
-
 
         //Provides functions to be used by front-end user
         //$targetForm = get_field('form_id','option');
@@ -143,26 +138,38 @@ class GBF_Controller{
         $entry_obj = $gf_model::get_entry($form_ids, $search_criteria, $sorting, $paging, $total_count);
         echo '<script type="text/javascript">console.log("Entry Obj")</script>'; 
         echo '<script type="text/javascript">console.log('.json_encode($entry_obj).')</script>'; 
-
         //? IDK what I'm testing for here.
         //echo '<pre>'.print_r(GFAPI::get_fields_by_type($form_obj, array('card', 'checkbox', 'checkbox_and_select', 'custom_field', 'dynamic_field_map', 'field_map', 'field_select', 'generic_map', 'hidden', 'post_select', 'radio_button', 'save_button', 'select', 'select_custom', 'simple_condition', 'text', 'textarea'), true)).'</pre>';        
-
+        
         //Retrieve Options Menu Values from ACF options page
         $endpoint_url = get_field('endpoint_url', 'options');
         $data = [];
         //$field_choices = get_field_object('field_630e72abaf029')['choices'];
 
-        //Data retrieval from ACF 
+        //Data retrieval from ACF TODO: this may be broken..
         $postfields = [];
         if(have_rows('fields_to_send', 'options')):
             while(have_rows('fields_to_send', 'options')) : the_row();
-                $value = get_sub_field('form_field_id');
-                $key = get_sub_field('map_to');                
-                $postfields[$key] = $value;
+                $key = get_sub_field('map_to');  // Eg. 'content'  
+                if($key === 'assignee_ids'){
+                    $value_key = get_sub_field('form_field_id'); // Eg. '13'
+                    $value = $entry_obj[$value_key]; // Eg. 'Jesse'
+
+                    //Get Basecamp ID from data object
+                    $user_id = $bc_model::get_user_ID($value);
+                
+                    $postfields[$key] = $user_id;
+                }else{
+                    $value_key = get_sub_field('form_field_id'); // Eg. '14'
+                    $value = $entry_obj[$value_key]; 
+                    
+                    $postfields[$key] = $value;
+                }
 
             endwhile;
         endif;
-            
+        echo '<script type="text/javascript">console.log("Basecamp Data")</script>'; 
+        echo '<script type="text/javascript">console.log('.json_encode($postfields).')</script>'; 
   
         //Prepare Data for BaseCamp by json_encoding it...       
 
@@ -175,7 +182,7 @@ class GBF_Controller{
 
         if(get_field('endpoint_url', 'options')){
             //Send data to BaseCamp via the basecamp class's method
-            $bc_model::send_data(get_field('endpoint_url', 'options'), json_encode($postfields));
+            $bc_model::send_data(get_field('endpoint_url', 'options'), json_encode($postfields)); //Disabled for testing.
 
         }      
 
@@ -185,6 +192,13 @@ class GBF_Controller{
 
     }
 }
+
+
+
+
+
+
+	
 
 
 

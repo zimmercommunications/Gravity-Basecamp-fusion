@@ -17,7 +17,7 @@ class Basecamp{
         }
         else{
             curl_setopt_array($curl, array(
-                CURLOPT_URL => 'https://3.basecampapi.com/4212850/buckets/17409592/todolists/4692674705/todos.json',
+                CURLOPT_URL => get_field('endpoint_url', 'options'),
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_ENCODING => '',
                 CURLOPT_MAXREDIRS => 10,
@@ -37,7 +37,9 @@ class Basecamp{
                 $response = curl_exec($curl);
         
                 curl_close($curl);
-                echo $response;
+                if(current_user_can( 'manage_options' )){
+                    echo $response;
+                }
         }
     }
     public function prep_data($data){
@@ -59,12 +61,12 @@ class Basecamp{
     public function get_token_v2(){
         exit();
         $provider = new \League\OAuth2\Client\Provider\GenericProvider([
-            'clientId'                => '0380a7df112fc726de678383571bf0605975e85d',    // The client ID assigned to you by the provider
-            'clientSecret'            => '64b11d0a24af0470a3dafa7b75fc1362bb25ab3e',    // The client password assigned to you by the provider
-            'redirectUri'             => 'https://dev.clear99.com/wp-json/gbf/v1/auth',
+            'clientId'                => get_field('client_id', 'options'),    // The client ID assigned to you by the provider
+            'clientSecret'            => get_field('client_secret', 'options'),    // The client password assigned to you by the provider
+            'redirectUri'             => get_site_url() . '/wp-json/gbf/v1/auth',
             'urlAuthorize'            => 'https://launchpad.37signals.com/authorization/new?type=web_server',
             'urlAccessToken'          => 'https://launchpad.37signals.com/authorization/token',
-            'urlResourceOwnerDetails' => 'https://3.basecampapi.com/4212850'
+            'urlResourceOwnerDetails' => 'https://3.basecampapi.com/4212850' // Jesse's User ID
         ]);
         
         // We don't have an authorization code, so we get one

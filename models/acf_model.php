@@ -24,19 +24,61 @@ class GBF_ACF{
         }
     }
     public function gen_options_fields(){
-        if( function_exists('acf_add_local_field_group') ):
+        if ( function_exists('acf_add_local_field_group') ):
 
             acf_add_local_field_group(array(
                 'key' => 'group_630e71fee0e2f',
                 'title' => 'BaseCamp Link',
                 'fields' => array(
                     array(
+                        'key' => 'field_6483895a1eaac',
+                        'label' => 'Client ID',
+                        'name' => 'client_id',
+                        'aria-label' => '',
+                        'type' => 'text',
+                        'instructions' => '',
+                        'required' => 0,
+                        'conditional_logic' => 0,
+                        'wrapper' => array(
+                            'width' => '',
+                            'class' => '',
+                            'id' => '',
+                        ),
+                        'acfe_save_meta' => 0,
+                        'default_value' => '',
+                        'maxlength' => '',
+                        'placeholder' => '',
+                        'prepend' => '',
+                        'append' => '',
+                    ),
+                    array(
+                        'key' => 'field_6483896b1eaad',
+                        'label' => 'Client Secret',
+                        'name' => 'client_secret',
+                        'aria-label' => '',
+                        'type' => 'text',
+                        'instructions' => '',
+                        'required' => 0,
+                        'conditional_logic' => 0,
+                        'wrapper' => array(
+                            'width' => '',
+                            'class' => '',
+                            'id' => '',
+                        ),
+                        'acfe_save_meta' => 0,
+                        'default_value' => '',
+                        'maxlength' => '',
+                        'placeholder' => '',
+                        'prepend' => '',
+                        'append' => '',
+                    ),
+                    array(
                         'key' => 'field_630e7238af028',
                         'label' => 'Endpoint URL',
                         'name' => 'endpoint_url',
                         'aria-label' => '',
                         'type' => 'text',
-                        'instructions' => '<a href="https://dev.clear99.com/wp-json/gbf/v1/auth">Authorize</a> <br> <a href="https://launchpad.37signals.com/authorization/new">Refresh Token</a> <br> Endpoint URL Example: https://3.basecampapi.com/$ACCOUNT_ID/buckets/$bucket_ID/todolists/$todolist_ID/',
+                        'instructions' => '<a href="'.get_site_url().'/wp-json/gbf/v1/auth">Authorize</a> <br> <a href="https://launchpad.37signals.com/authorization/new">Refresh Token</a> <br> Endpoint URL Example: https://3.basecampapi.com/$ACCOUNT_ID/buckets/$bucket_ID/todolists/$todolist_ID/',
                         'required' => 0,
                         'conditional_logic' => 0,
                         'wrapper' => array(
@@ -65,6 +107,8 @@ class GBF_ACF{
                             'id' => '',
                         ),
                         'choices' => array(
+                            1 => 'Contact Us',
+                            3 => 'Website Projects Form',
                         ),
                         'default_value' => false,
                         'allow_null' => 0,
@@ -96,6 +140,7 @@ class GBF_ACF{
                         'max' => 0,
                         'layout' => 'table',
                         'button_label' => 'Add Row',
+                        'rows_per_page' => 20,
                         'sub_fields' => array(
                             array(
                                 'key' => 'field_630e7f678a294',
@@ -112,12 +157,53 @@ class GBF_ACF{
                                     'id' => '',
                                 ),
                                 'choices' => array(
-                                    array(
-                                        0 => 'Your Message',
-                                    ),
-                                    array(
-                                        0 => '',
-                                    ),
+                                    3 => 'Name',
+                                    14 => 'Email',
+                                    4 => 'Today\'s Date',
+                                    5 => 'Date Needed',
+                                    6 => 'Is this needed for a meeting? If so what is the meeting date?',
+                                    8 => 'Advertiser name',
+                                    7 => 'What is this project for? (Choose from dropdown)',
+                                    36 => '',
+                                    32 => 'Company',
+                                    35 => 'HTML Block',
+                                    34 => 'Add New Company',
+                                    17 => 'When should this listing expire?',
+                                    28 => 'HTML Block',
+                                    47 => 'Company Information',
+                                    60 => 'Stacked or Square Logo',
+                                    61 => 'Horizontal Logo',
+                                    39 => 'Company Address',
+                                    40 => 'Company Phone Number',
+                                    41 => 'Company Email',
+                                    42 => 'Company Website',
+                                    43 => 'Company Social Media Links',
+                                    44 => 'Company Description (1-2 paragraphs)',
+                                    46 => 'Job Listing Information',
+                                    48 => 'Job Title (up to two)',
+                                    54 => 'Job Type',
+                                    51 => 'Salary or Hourly Rate',
+                                    62 => 'Job Category(ies)',
+                                    63 => 'Other Job Category(ies)',
+                                    52 => 'Job Description(s) (up to 2 positions)',
+                                    53 => 'Qualifications',
+                                    55 => 'Job Responsibilities',
+                                    56 => 'Compensations and Benefits',
+                                    57 => 'More Information',
+                                    58 => 'How to Apply',
+                                    59 => 'Job Location',
+                                    37 => '',
+                                    31 => 'Pixel Placement Information',
+                                    38 => '',
+                                    30 => 'Digital Ad Sizes Needed',
+                                    10 => 'If "other" above, please list the sizes needed',
+                                    45 => '',
+                                    13 => 'Who do you prefer to work on this project?',
+                                    12 => 'Include any files or art pieces necessary',
+                                    16 => 'File',
+                                    18 => 'File',
+                                    19 => 'File',
+                                    11 => 'Project Instructions',
                                 ),
                                 'default_value' => false,
                                 'placeholder' => '',
@@ -168,7 +254,6 @@ class GBF_ACF{
                                 'parent_repeater' => 'field_630e72abaf029',
                             ),
                         ),
-                        'rows_per_page' => 20,
                     ),
                 ),
                 'location' => array(
@@ -188,7 +273,7 @@ class GBF_ACF{
                 'hide_on_screen' => '',
                 'active' => true,
                 'description' => '',
-                'show_in_rest' => false,
+                'show_in_rest' => 0,
                 'acfe_display_title' => '',
                 'acfe_autosync' => '',
                 'acfe_form' => 0,
@@ -196,7 +281,9 @@ class GBF_ACF{
                 'acfe_note' => '',
             ));
             
-            endif;		
+            endif;
+            
+                
     }
     
 }

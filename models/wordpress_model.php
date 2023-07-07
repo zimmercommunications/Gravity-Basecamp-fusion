@@ -30,10 +30,10 @@ class WordPress{
         $code = $request['code'];
 
         $provider = new Stevenmaguire\OAuth2\Client\Provider\Basecamp([
-            'clientId'          => '0380a7df112fc726de678383571bf0605975e85d',
-            'clientSecret'      => '64b11d0a24af0470a3dafa7b75fc1362bb25ab3e',
+            'clientId'          => get_field('client_id', 'options'),
+            'clientSecret'      => get_field('client_secret', 'options'),
             /* Redirect to this plugin's response handler */
-            'redirectUri'       => 'https://dev.clear99.com/wp-json/gbf/v1/auth',
+            'redirectUri'       => get_site_url() . '/wp-json/gbf/v1/auth',
         ]);
 
         if (!isset($code)) {
@@ -98,9 +98,10 @@ class WordPress{
         $code = $request['code'];
 
         $provider = new \League\OAuth2\Client\Provider\GenericProvider([
-            'clientId'                => '0380a7df112fc726de678383571bf0605975e85d',    // The client ID assigned to you by the provider
-            'clientSecret'            => '64b11d0a24af0470a3dafa7b75fc1362bb25ab3e',    // The client password assigned to you by the provider
-            'redirectUri'             => 'https://dev.clear99.com/wp-json/gbf/v1/auth',
+            'clientId'          => get_field('client_id', 'options'),
+            'clientSecret'      => get_field('client_secret', 'options'),
+            /* Redirect to this plugin's response handler */
+            'redirectUri'       => get_site_url() . '/wp-json/gbf/v1/auth',
             'urlAuthorize'            => 'https://launchpad.37signals.com/authorization/new?type=web_server',
             'urlAccessToken'          => 'https://launchpad.37signals.com/authorization/token?type=web_server',
             'urlResourceOwnerDetails' => 'https://launchpad.37signals.com/authorization.json'
@@ -169,11 +170,14 @@ class WordPress{
                 ]);
         
                 // We have an access token, which we may use in authenticated
-                // requests against the service provider's API.
-                echo 'Access Token: ' . $accessToken->getToken() . "<br>";
-                echo 'Refresh Token: ' . $accessToken->getRefreshToken() . "<br>";
-                echo 'Expired in: ' . $accessToken->getExpires() . "<br>";
-                echo 'Already expired? ' . ($accessToken->hasExpired() ? 'expired' : 'not expired') . "<br>";
+                // requests against the service provider's API. Hidden from non-logged in users.
+                if(current_user_can( 'manage_options' )){
+                    echo 'Access Token: ' . $accessToken->getToken() . "<br>";
+                    echo 'Refresh Token: ' . $accessToken->getRefreshToken() . "<br>";
+                    echo 'Expired in: ' . $accessToken->getExpires() . "<br>";
+                    echo 'Already expired? ' . ($accessToken->hasExpired() ? 'expired' : 'not expired') . "<br>";
+                }
+
         
                 // Using the access token, we may look up details about the
                 // resource owner.
@@ -197,8 +201,10 @@ class WordPress{
                 exit($e->getMessage());
         
             }
+            // Did not see present valid auth token, so we have to fetch a new one 
             // Use this to interact with an API on the users behalf
             echo "Use this to interact with an API on the users behalf";
+            echo "<a href='".get_site_url()."/wp-admin'>Click here to go back to the WordPress Admin Console</a>";
 
             // $basecamp_access = [];
             // $basecamp_access['token'] = $accessToken->getToken();

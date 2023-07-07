@@ -120,7 +120,7 @@ class GBF_Controller{
         }
     }
 
-    //Function to grab new submission's data and send data to Base Camp
+    //Function to grab new submission's data and send data to Basecamp
     public function get_submissions($form_ids = '', $search_criteria = array(), $sorting = null, $paging = null, &$total_count = null){
         // if($_COOKIE['get_submissions']){
         //     setcookie('get_submissions', $_COOKIE['get_submissions']++, time()+3600, '/') ;
@@ -146,7 +146,7 @@ class GBF_Controller{
         $data = [];
         //$field_choices = get_field_object('field_630e72abaf029')['choices'];
 
-        //Data retrieval from ACF TODO: this may be broken..
+        //Data retrieval from ACF
         $postfields = [];
         if(have_rows('fields_to_send', 'options')):
             while(have_rows('fields_to_send', 'options')) : the_row();
